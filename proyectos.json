@@ -1,0 +1,69 @@
+[
+  {
+    "id": "argerich",
+    "clave": "arg2984",
+    "nombre": "Argerich 2984",
+    "descripcion": "Estructura de H°A · PB + 4 pisos + sala de máquinas",
+    "origen": [
+      14.2,
+      32.4
+    ],
+    "datos": "skp/tablero-datos.json",
+    "san": "san/sanitaria.json",
+    "alb": "alb/albanileria.json",
+    "archivos": [
+      {
+        "rol": "Modelo de estructura",
+        "ruta": "03_ANTEPROYECTO/03_MODELOS 3D BORRADOR/03_ESTRUCTURAL/MODELADO ESTRUCTURAL.skp",
+        "cargado": "2026-11-19T15:48:16.141Z",
+        "tam": 4380049,
+        "proceso": "skp"
+      },
+      {
+        "rol": "Plano de estructura del ingeniero",
+        "ruta": "04_DOCUMENTACIÓN TÉCNICA/02_ESTRUCTURA/01_ESTRUCTURA/DWG/RICH_ES.dwg",
+        "leido": "RICH_ES.dxf",
+        "cargado": "2026-11-13T11:04:00-03:00",
+        "proceso": "es"
+      },
+      {
+        "rol": "Albañilería",
+        "ruta": "04_DOCUMENTACIÓN TÉCNICA/04_ALBAÑILERÍA/01_MUROS/DWG/RICH_ALB_MUROS.dwg",
+        "cargado": "2026-11-19T15:52:55.555Z",
+        "tam": 591315,
+        "proceso": "alb"
+      },
+      {
+        "rol": "Instalación sanitaria",
+        "ruta": "04_DOCUMENTACIÓN TÉCNICA/03_INSTALACIONES/01_INSTALACIÓN SANITARIA/01_CLOACAL/DWG/RICH_INS_CLO.dwg",
+        "proceso": "san",
+        "cargado": "2026-11-19T15:53:48.263Z",
+        "tam": 599898
+      }
+    ]
+  },
+  {
+    "id": "habana",
+    "clave": "hab3329",
+    "nombre": "Habana 3329",
+    "descripcion": "Estructura de H°A · PB + 7 pisos + azotea + sala de máquinas",
+    "datos": "hab/tablero-datos.json",
+    "san": "hab/sanitaria.json",
+    "archivos": [
+      {
+        "rol": "Modelo de estructura",
+        "ruta": "03_ANTEPROYECTO/03_MODELOS 3D BORRADOR/HAB_MODELADO ESTRUCTURAL edificio.skp",
+        "cargado": "2026-11-19T15:40:01.516Z",
+        "tam": 2605008,
+        "proceso": "skp"
+      },
+      {
+        "rol": "Plano de estructura y pases en losa",
+        "ruta": "04_DOCUMENTACIÓN TÉCNICA/02_ESTRUCTURA/01_ESTRUCTURA/DWG/HAB_ES.dwg",
+        "cargado": "2026-11-17T15:33:00-03:00",
+        "tam": 1496518,
+        "proceso": "es"
+      }
+    ]
+  }
+]

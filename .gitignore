@@ -1,0 +1,27 @@
+# Rutas de esta compu (carpetas de OneDrive de cada obra): no se suben
+carpetas.local.json
+
+# Dependencias y respaldos locales
+node_modules/
+respaldo/
+
+# Archivos fuente de las obras (están en OneDrive) y sus conversiones: pesados y se regeneran con actualizar.js
+*.skp
+*.skb
+*.dwg
+*.dxf
+*.bak
+dxf.json
+skp.json
+alb/muros.json
+skp/previo*/
+*.scr
+log.txt
+
+# Salidas que no hacen falta en el repositorio (la página publicada es docs/index.html)
+argerich-estructura.html
+*.png
+*.svg
+
+# Copias de trabajo de la plantilla
+*.bak*

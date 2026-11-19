@@ -1,0 +1,271 @@
+<title>Modelo estructural Argerich 2984</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: visor 3D a pantalla completa con panel de cómputo a la derecha (abajo en el celular). */
+:root {
+  --bg: #eef1f4; --panel: #ffffff; --fg: #18212b; --muted: #5d6b79; --line: #d5dce3; --accent: #1f5fbf;
+  --sel: #f2a900; --row: #f5f7fa; --canvas: #e6eaef;
+  --c-columna: #c8372d; --c-viga: #2f6fd6; --c-losa: #b9c2cc; --c-tabique: #2e9a5a; --c-base: #b8892d; --c-escalera: #8a5ac8; --c-viga_fundacion: #8c6a2a;
+  --f-head: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12171d; --panel: #181f27; --fg: #e3e8ee; --muted: #93a1b0; --line: #2a3440; --accent: #6aa0f0;
+  --sel: #ffc23d; --row: #1d252f; --canvas: #0f1419;
+  --c-columna: #e2584d; --c-viga: #5b92ea; --c-losa: #6c7785; --c-tabique: #48b877; --c-base: #d2a44a; --c-escalera: #a77ee0; --c-viga_fundacion: #a8843c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12171d; --panel: #181f27; --fg: #e3e8ee; --muted: #93a1b0; --line: #2a3440; --accent: #6aa0f0;
+  --sel: #ffc23d; --row: #1d252f; --canvas: #0f1419;
+  --c-columna: #e2584d; --c-viga: #5b92ea; --c-losa: #6c7785; --c-tabique: #48b877; --c-base: #d2a44a; --c-escalera: #a77ee0; --c-viga_fundacion: #a8843c; color-scheme: dark }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 14px; }
+.app { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 380px; grid-template-rows: auto minmax(0, 1fr); }
+header { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--line); background: var(--panel); }
+h1 { font-family: var(--f-head); font-weight: 600; font-size: 20px; margin: 0; letter-spacing: .01em; }
+.sub { color: var(--muted); font-size: 12.5px; }
+.sub b { color: var(--fg); font-weight: 500; }
+.vista { position: relative; min-width: 0; min-height: 0; background: var(--canvas); }
+#lienzo { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
+.controles { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); top: 12px; display: flex; flex-wrap: wrap; gap: 6px; max-width: calc(100% - 24px); }
+.chip { font: 500 12px var(--f-body); display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
+.chip[aria-pressed="false"] { opacity: .45; }
+.chip:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dot { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+.niveles { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); bottom: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 4px; font-size: 12px; }
+.niveles label { display: flex; align-items: center; gap: 8px; }
+.niveles input[type=range] { width: 170px; }
+.niveles output { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
+.ayuda { position: absolute; right: 12px; bottom: 12px; font-size: 11.5px; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+aside { background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; min-width: 0; padding-block: 14px 24px; padding-left: 16px; padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 18px; }
+h2 { font-family: var(--f-head); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 0 0 8px; }
+.ficha { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--row); }
+.ficha .nom { font-family: var(--f-head); font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.ficha dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 10px 0 0; font-size: 13px; }
+.ficha dt { color: var(--muted); }
+.ficha dd { margin: 0; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.vacio { color: var(--muted); font-size: 13px; }
+.buscar { display: flex; gap: 6px; }
+.buscar input { flex: 1; min-width: 0; font: 14px var(--f-body); padding: 7px 9px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
+.tabla-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+th, td { padding: 5px 6px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-weight: 600; color: var(--muted); font-size: 11.5px; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: var(--row); }
+tfoot td { font-weight: 600; border-bottom: none; }
+td.num { font-family: var(--f-mono); }
+.avisos { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--muted); display: grid; gap: 4px; }
+.nota { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin: 0; }
+.lista { display: grid; gap: 2px; max-height: 220px; overflow-y: auto; font-size: 12.5px; }
+.lista button { all: unset; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 4px 6px; border-radius: 4px; }
+.lista button:hover, .lista button:focus-visible { background: var(--row); }
+.lista span:last-child { font-family: var(--f-mono); color: var(--muted); }
+@media (max-width: 800px) {
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 62vh auto; height: auto; }
+  aside { border-left: none; border-top: 1px solid var(--line); overflow: visible; padding-left: max(16px, env(safe-area-inset-left, 0px)); }
+  .ayuda { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="app">
+  <header>
+    <h1>Argerich 2984 · Estructura</h1>
+    <span class="sub">Fuente: <b>MODELADO ESTRUCTURAL.skp</b> · cotas del modelo: PB 3,18, pisos cada 2,85 · comparado con <b>RICH_ES.dxf</b> del ingeniero</span>
+  </header>
+
+  <div class="vista">
+    <canvas id="lienzo" aria-label="Modelo 3D de la estructura. Arrastrá para orbitar, rueda para acercar, clic para elegir un elemento."></canvas>
+    <div class="controles"><div id="versiones" role="group" aria-label="Versión del modelo" style="display:flex;gap:6px"></div><div id="tipos" role="group" aria-label="Mostrar tipos de elemento" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>
+    <div class="niveles">
+      <label for="hasta">Mostrar hasta <input type="range" id="hasta" min="0" max="7" step="1"></label>
+      <output id="hastaTxt" for="hasta"></output>
+      <label><input type="checkbox" id="soloNivel"> Solo ese nivel</label>
+    </div>
+    <div class="ayuda">Arrastrar: orbitar · Derecho: desplazar · Rueda: zoom · Clic: elegir</div>
+  </div>
+
+  <aside>
+    <section>
+      <h2>Elemento</h2>
+      <div class="buscar"><input id="q" type="search" placeholder="Buscar: C04, V-115, L2…" aria-label="Buscar elemento por nombre"></div>
+      <div id="ficha" style="margin-top:10px"><p class="vacio">Hacé clic en una columna, viga o losa para ver su ficha.</p></div>
+      <div class="lista" id="resultados" hidden></div>
+    </section>
+    <section>
+      <h2>Cómputo de hormigón (m³)</h2>
+      <div class="tabla-wrap"><table id="computo"></table></div>
+      <p class="nota" style="margin-top:8px">Volumen de cada sólido del SketchUp. Clic en una fila para ver solo ese nivel. Las bases incluyen el tronco hasta −0,03.</p>
+    </section>
+    <section>
+      <h2>Diferencias SketchUp vs. plano del ingeniero</h2>
+      <ul class="avisos" id="avisos"></ul>
+    </section>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const MODELO = /*MODELO*/null;
+const TIPOS = [
+  ['columna', 'Columnas'], ['viga', 'Vigas'], ['losa', 'Losas'], ['escalera', 'Escaleras'], ['tabique', 'Tabiques H°A'], ['base', 'Bases'], ['viga_fundacion', 'Vigas de fund.'],
+];
+let version = 'B';
+const fmt = (n, d = 2) => n.toLocaleString('es-AR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const niveles = MODELO.niveles;
+const nivelIdx = Object.fromEntries(niveles.map((n, i) => [n.id, i]));
+
+// ---------- Escena ----------
+const lienzo = document.getElementById('lienzo');
+const renderer = new THREE.WebGLRenderer({ canvas: lienzo, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const escena = new THREE.Scene();
+const camara = new THREE.PerspectiveCamera(40, 1, 0.1, 500);
+const ctrl = new THREE.OrbitControls(camara, lienzo);
+ctrl.enableDamping = true;
+escena.add(new THREE.HemisphereLight(0xffffff, 0x8899aa, 0.85));
+const sol = new THREE.DirectionalLight(0xffffff, 0.55); sol.position.set(-20, 40, 25); escena.add(sol);
+const grilla = new THREE.GridHelper(40, 40); escena.add(grilla);
+
+// Coordenadas del plano: x a lo largo del lote, y hacia el fondo, z arriba -> three: (x, z, -y)
+const CX = 11, CY = 4.9;
+const mats = {};
+function material(tipo) {
+  return mats[tipo] ||= new THREE.MeshLambertMaterial({ color: css('--c-' + tipo), side: THREE.DoubleSide, transparent: tipo === 'losa', opacity: tipo === 'losa' ? 0.82 : 1 });
+}
+const matSel = new THREE.MeshLambertMaterial({ color: css('--sel'), side: THREE.DoubleSide });
+const bordeMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18 });
+const mallas = []; const porId = {};
+// Cada elemento trae sus triángulos en cm. Plano: x a lo largo, y hacia el fondo, z arriba -> three (x, z, -y).
+const OFF = { A: [12.5, 7.5], B: [14, 32.5] };
+for (const e of MODELO.elementos) {
+  porId[e.id] = { e, mallas: [] };
+  const [ox, oy] = OFF[e.version];
+  const pos = new Float32Array(e.v.length);
+  for (let i = 0; i < e.v.length; i += 3) { pos[i] = e.v[i] / 100 - ox; pos[i + 1] = e.v[i + 2] / 100; pos[i + 2] = -(e.v[i + 1] / 100 - oy); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, material(e.tipo));
+  m.userData.id = e.id;
+  m.add(new THREE.LineSegments(new THREE.EdgesGeometry(g, 25), bordeMat));
+  escena.add(m); mallas.push(m); porId[e.id].mallas.push(m);
+}
+camara.position.set(-20, 19, 24); ctrl.target.set(0, 7, 0); ctrl.update();
+
+function tamanio() {
+  const r = lienzo.parentElement.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false); camara.aspect = r.width / Math.max(r.height, 1); camara.updateProjectionMatrix();
+}
+new ResizeObserver(tamanio).observe(lienzo.parentElement); tamanio();
+(function loop() { ctrl.update(); renderer.render(escena, camara); requestAnimationFrame(loop); })();
+
+// ---------- Filtros ----------
+const visibles = Object.fromEntries(TIPOS.map(([t]) => [t, true]));
+const hasta = document.getElementById('hasta'), soloNivel = document.getElementById('soloNivel');
+hasta.max = niveles.length - 1; hasta.value = niveles.length - 1;
+function aplicarFiltros() {
+  const h = +hasta.value;
+  document.getElementById('hastaTxt').textContent = niveles[h].nombre + ' (z ' + fmt(niveles[h].z) + ')';
+  for (const m of mallas) {
+    const e = porId[m.userData.id].e; const i = nivelIdx[e.nivel];
+    m.visible = e.version === version && visibles[e.tipo] && (soloNivel.checked ? i === h : i <= h);
+  }
+}
+const tiposDiv = document.getElementById('tipos');
+for (const [t, nombre] of TIPOS) {
+  const b = document.createElement('button');
+  b.className = 'chip'; b.setAttribute('aria-pressed', 'true'); b.id = 'tipo-' + t;
+  b.innerHTML = `<span class="dot" style="background:var(--c-${t})"></span>${nombre}`;
+  b.onclick = () => { visibles[t] = !visibles[t]; b.setAttribute('aria-pressed', visibles[t]); aplicarFiltros(); };
+  tiposDiv.append(b);
+}
+const versDiv = document.getElementById('versiones');
+for (const v of Object.keys(MODELO.versiones)) {
+  const b = document.createElement('button'); b.className = 'chip'; b.id = 'version-' + v; b.title = MODELO.versiones[v];
+  b.textContent = 'Versión ' + v; b.setAttribute('aria-pressed', v === version);
+  b.onclick = () => { version = v; versDiv.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); elegir(null); aplicarFiltros(); armarTabla(); };
+  versDiv.append(b);
+}
+hasta.oninput = aplicarFiltros; soloNivel.onchange = aplicarFiltros; aplicarFiltros();
+
+// ---------- Selección ----------
+let seleccion = null;
+const etiquetaTipo = Object.fromEntries(TIPOS.map(([t, n]) => [t, n.replace(/s( H°A)?$/, '$1').replace('Escalera', 'Escalera')]));
+function elegir(id) {
+  if (seleccion) porId[seleccion].mallas.forEach(m => m.material = material(porId[seleccion].e.tipo));
+  seleccion = id;
+  const f = document.getElementById('ficha');
+  if (!id) { f.innerHTML = '<p class="vacio">Hacé clic en una columna, viga o losa para ver su ficha.</p>'; return; }
+  const { e, mallas: ms } = porId[id];
+  ms.forEach(m => m.material = matSel);
+  const filas = [
+    ['Tipo', etiquetaTipo[e.tipo] || e.tipo], ['Nivel', niveles[nivelIdx[e.nivel]].nombre], ['Sección', e.seccion],
+    e.largo != null && ['Largo', fmt(e.largo) + ' m'], e.area != null && ['Superficie', fmt(e.area) + ' m²'],
+    
+    e.desnivel && ['Desnivel', fmt(e.desnivel) + ' m'],
+    ['Volumen', fmt(e.volumen, 3) + ' m³'],
+    e.dxf && ['Según DXF', (e.dxf.seccion !== e.seccion ? e.dxf.seccion + ' · ' : '') + fmt(e.dxf.volumen, 3) + ' m³'],
+    e.rotulo && ['Rótulo CYPE', fmt(e.rotulo, 2) + ' m³'],
+    ['Versión', e.version],
+  ].filter(Boolean);
+  f.innerHTML = `<div class="ficha"><div class="nom"><span class="dot" style="background:var(--c-${e.tipo})"></span>${e.nombre}</div><dl>${filas.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>`;
+}
+const ray = new THREE.Raycaster(); const ptr = new THREE.Vector2(); let abajo = null;
+lienzo.addEventListener('pointerdown', ev => abajo = [ev.clientX, ev.clientY]);
+lienzo.addEventListener('pointerup', ev => {
+  if (!abajo || Math.hypot(ev.clientX - abajo[0], ev.clientY - abajo[1]) > 5) return;
+  const r = lienzo.getBoundingClientRect();
+  ptr.set((ev.clientX - r.left) / r.width * 2 - 1, -(ev.clientY - r.top) / r.height * 2 + 1);
+  ray.setFromCamera(ptr, camara);
+  const hit = ray.intersectObjects(mallas.filter(m => m.visible), false)[0];
+  elegir(hit ? hit.object.userData.id : null);
+});
+
+// ---------- Búsqueda ----------
+const q = document.getElementById('q'), res = document.getElementById('resultados');
+q.oninput = () => {
+  const t = q.value.trim().toLowerCase();
+  if (!t) { res.hidden = true; return; }
+  const hall = MODELO.elementos.filter(e => e.version === version && e.nombre.toLowerCase().startsWith(t)).slice(0, 40);
+  res.hidden = false;
+  res.innerHTML = hall.length ? '' : '<p class="vacio">No hay elementos con ese nombre.</p>';
+  for (const e of hall) {
+    const b = document.createElement('button');
+    b.innerHTML = `<span>${e.nombre} · ${niveles[nivelIdx[e.nivel]].nombre}</span><span>${fmt(e.volumen, 2)} m³</span>`;
+    b.onclick = () => { hasta.value = nivelIdx[e.nivel]; soloNivel.checked = false; aplicarFiltros(); elegir(e.id); };
+    res.append(b);
+  }
+};
+
+// ---------- Cómputo por nivel ----------
+const cols = TIPOS.map(([t]) => t);
+const tabla = document.getElementById('computo');
+function armarTabla() {
+const tot = Object.fromEntries(cols.map(c => [c, 0])); let totGen = 0;
+let html = `<thead><tr><th>Nivel</th>${TIPOS.map(([t, n]) => `<th title="${n}"><span class="dot" style="display:inline-block;background:var(--c-${t})"></span></th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+niveles.forEach((n, i) => {
+  const s = Object.fromEntries(cols.map(c => [c, 0]));
+  MODELO.elementos.filter(e => e.version === version && e.nivel === n.id).forEach(e => { s[e.tipo] += e.volumen; });
+  const t = cols.reduce((a, c) => a + s[c], 0); totGen += t; cols.forEach(c => tot[c] += s[c]);
+  html += `<tr data-i="${i}"><td>${n.nombre.replace('Losa ', '')}</td>${cols.map(c => `<td class="num">${s[c] ? fmt(s[c], 1) : '–'}</td>`).join('')}<td class="num">${fmt(t, 1)}</td></tr>`;
+});
+html += `</tbody><tfoot><tr><td>Total</td>${cols.map(c => `<td class="num">${fmt(tot[c], 1)}</td>`).join('')}<td class="num">${fmt(totGen, 1)}</td></tr></tfoot>`;
+tabla.innerHTML = html;
+tabla.querySelectorAll('tbody tr').forEach(tr => tr.onclick = () => { hasta.value = tr.dataset.i; soloNivel.checked = true; aplicarFiltros(); });
+}
+armarTabla();
+
+document.getElementById('avisos').innerHTML = MODELO.notas.map(a => `<li>${a}</li>`).join('');
+
+// Colores según el tema: si cambia, se recalculan los materiales.
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  for (const t in mats) mats[t].color.set(css('--c-' + t)); matSel.color.set(css('--sel'));
+  renderer.setClearColor(css('--canvas'));
+});
+renderer.setClearColor(css('--canvas'));
+</script>
