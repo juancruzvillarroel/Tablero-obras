@@ -31,6 +31,13 @@ const OBRAS = {
     },
     cadena: [['hab', 'extraer.js'], ['hab', 'pases.js']],
     salidas: ['hab/skp.json', 'hab/tablero-datos.json', 'hab/modelo.skp', 'hab/HAB_ES.dwg', 'hab/HAB_ES.dxf', 'hab/dxf.json', 'hab/sanitaria.json'],
+  },  // Libertador 3174: por ahora solo el SketchUp de estructura (los pases de losa vienen dibujados en el modelo).
+  libertador: {
+    procesos: {
+      skp: { tipo: 'skp', carpeta: 'lib', copia: 'lib/modelo.skp' },
+    },
+    cadena: [['lib', 'extraer.js']],
+    salidas: ['lib/skp.json', 'lib/tablero-datos.json', 'lib/modelo.skp'],
   },
 };
 

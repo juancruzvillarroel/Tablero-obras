@@ -20,7 +20,7 @@ de cada obra en OneDrive: el SketchUp de estructura y los CAD de estructura, ins
 | `proyectos.json` | Las obras, sus datos y los archivos con los que se armaron. |
 | `carpetas.local.json` | Dónde está cada obra en esta compu (no se sube). |
 | `actualizar.js` | Vuelve a cargar, agrega o quita un archivo y rearma lo que depende de él, con respaldo. |
-| `skp/`, `hab/` | Estructura de Argerich 2984 y de Habana 3329 desde SketchUp (`exportar.rb` + extracción). |
+| `skp/`, `hab/`, `lib/` | Estructura de Argerich 2984, Habana 3329 y Libertador 3174 desde SketchUp (`exportar.rb` + extracción). |
 | `san/` | Instalación sanitaria de Argerich desde el CAD. |
 | `alb/` | Muros de Argerich desde el CAD de albañilería. |
 | `superposiciones.js` | Descuenta el hormigón compartido entre piezas que se superponen. |

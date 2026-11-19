@@ -65,5 +65,21 @@
         "proceso": "es"
       }
     ]
+  },
+  {
+    "id": "libertador",
+    "clave": "lib3174",
+    "nombre": "Libertador 3174",
+    "descripcion": "Estructura de H°A · PB + 3 pisos + azotea y sala de máquinas",
+    "datos": "lib/tablero-datos.json",
+    "archivos": [
+      {
+        "rol": "Modelo de estructura",
+        "ruta": "04_DOCUMENTACIÓN TÉCNICA/02_ESTRUCTURA/LIB_3D_ESTRUCTURA.skp",
+        "cargado": "2026-11-19T19:50:00.213Z",
+        "tam": 419352,
+        "proceso": "skp"
+      }
+    ]
   }
 ]
