@@ -78,7 +78,8 @@ for (const B of BANDAS) {
     const k = [1, 2, 3].sort((a, b) => c.votos[b] - c.votos[a])[0];
     if (c.votos[0] > c.votos[k]) continue;                       // recinto de estructura (columna, tabique H°A)
     const T = TIPOS[k];
-    // Rectángulos por corridas (se suma media celda por lado: el filo es el eje de la línea dibujada)
+    // Rectángulos por corridas. El filo del muro es el eje de la línea dibujada, que ocupa la celda vecina: se suma una
+    // celda entera por lado (con media celda el muro salía 1 cm más corto y 1 cm más fino que en el CAD).
     const filas = new Map();
     for (const i of c.celdas) { const y = (i / W) | 0; (filas.get(y) || filas.set(y, []).get(y)).push(i % W); }
     const rects = [], abiertos = new Map(); let prev = null;
@@ -89,10 +90,17 @@ for (const B of BANDAS) {
       for (const [a0, a1] of corr) { const kk = a0 + ',' + a1, r = abiertos.get(kk); if (r && prev === y - 1) { r.y1 = y; nuevos.set(kk, r); } else { const n = { x0: a0, x1: a1, y0: y, y1: y }; rects.push(n); nuevos.set(kk, n); } }
       abiertos.clear(); nuevos.forEach((v, kk) => abiertos.set(kk, v)); prev = y;
     }
-    // Un recinto de un solo rectángulo más grueso que el muro de su capa es un nicho (ej. el del equipo de aire).
-    if (rects.length === 1 && Math.min(rects[0].x1 - rects[0].x0 + 1, rects[0].y1 - rects[0].y0 + 1) * R > T.esp + 0.04) { avisos.push('Nicho descartado en banda ' + B.y0); continue; }
+    // Un recinto rectangular más grueso que el muro de su capa no es un muro: es un nicho (ej. el del equipo de aire) o
+    // el hueco vacío que queda entre dos muros (ej. entre el muro en L y el portante en las esquinas de los pisos 1 a 4).
+    // Se mira el rectángulo que lo encierra y no la cantidad de rectángulos: cuando una línea del CAD está corrida 1 cm,
+    // el recinto se parte en dos rectángulos y antes se escapaba de esta regla y se contaba como muro.
+    { const x0 = Math.min(...rects.map(r => r.x0)), x1 = Math.max(...rects.map(r => r.x1)), y0 = Math.min(...rects.map(r => r.y0)), y1 = Math.max(...rects.map(r => r.y1));
+      const lleno = c.celdas.length / ((x1 - x0 + 1) * (y1 - y0 + 1));
+      if (lleno > 0.9 && (Math.min(x1 - x0, y1 - y0) + 2) * R > T.esp + 0.04) {
+        const [ax, ay] = aM(GX0 + (x0 - 1) * R, B.y0 + (y0 - 1) * R, B.y0), [bx, by] = aM(GX0 + (x1 + 1) * R, B.y0 + (y1 + 1) * R, B.y0);
+        avisos.push(`Hueco o nicho descartado en ${B.pisos.map(p => p.id).join('/')}: x ${ax.toFixed(2)}–${bx.toFixed(2)}, y ${ay.toFixed(2)}–${by.toFixed(2)}`); continue; } }
     for (const P of B.pisos) {
-      const cajas = rects.map(r => { const [ax, ay] = aM(GX0 + (r.x0 - 0.5) * R, B.y0 + (r.y0 - 0.5) * R, B.y0), [bx, by] = aM(GX0 + (r.x1 + 0.5) * R, B.y0 + (r.y1 + 0.5) * R, B.y0); return [ax, ay, bx, by].map(v => +v.toFixed(3)); });
+      const cajas = rects.map(r => { const [ax, ay] = aM(GX0 + (r.x0 - 1) * R, B.y0 + (r.y0 - 1) * R, B.y0), [bx, by] = aM(GX0 + (r.x1 + 1) * R, B.y0 + (r.y1 + 1) * R, B.y0); return [ax, ay, bx, by].map(v => +v.toFixed(3)); });
       const planta = cajas.reduce((a, r) => a + (r[2] - r[0]) * (r[3] - r[1]), 0);
       // altura: valor más repetido del fondo de estructura sobre el muro
       // Si la estructura de arriba cubre al menos un tercio de los puntos del muro, manda ella aunque sea más angosta

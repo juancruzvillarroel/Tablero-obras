@@ -47,7 +47,7 @@ header.obra { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: 
 .solo-visible { color: var(--warn); font-weight: 600; }
 .kpi-filtro { align-self: center; font-size: 11.5px; color: var(--warn); font-weight: 600; border: 1px solid currentColor; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
 /* Las barras del plano y del lápiz van abajo, entre la columna de niveles y capas y los íconos de herramientas. */
-.barra-corte { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 242px); bottom: 12px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 12.5px; z-index: 6; flex-wrap: wrap; max-width: calc(100% - 350px); box-sizing: border-box; }
+.barra-corte { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 242px); bottom: 12px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 12.5px; z-index: 6; flex-wrap: wrap; max-width: calc(100% - 392px); box-sizing: border-box; }
 .barra-corte input[type=range] { width: 160px; accent-color: var(--ink); }
 .barra-corte .btn { padding: 3px 8px; }
 .barra-corte .seg { display: flex; gap: 2px; background: var(--hover); border-radius: 7px; padding: 2px; }
@@ -271,7 +271,13 @@ tr.grupo td { background: var(--surface); font: 600 10.5px var(--f-body); text-t
 .btn.prim { background: var(--ink); color: var(--ink-fg); border-color: var(--ink); }
 
 .acciones3d button[aria-pressed="true"] { background: var(--ink); color: var(--ink-fg); }
-.barra-lapiz { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 242px); bottom: 12px; max-width: calc(100% - 350px); box-sizing: border-box; flex-wrap: wrap; display: flex; align-items: center; gap: 10px; padding: 6px 10px; font-size: 12.5px; }
+.barra-lapiz { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 242px); bottom: 12px; max-width: calc(100% - 392px); box-sizing: border-box; flex-wrap: wrap; display: flex; align-items: center; gap: 10px; padding: 6px 10px; font-size: 12.5px; }
+.barra-medir { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 242px); bottom: 12px; display: flex; align-items: center; gap: 10px; padding: 6px 10px; font-size: 12.5px; z-index: 6; max-width: calc(100% - 392px); flex-wrap: wrap; box-sizing: border-box; }
+.barra-medir span { color: var(--fg2); }
+.capa-medir { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
+.etq-medida { position: absolute; transform: translate(-50%, -130%); background: var(--ink); color: var(--ink-fg); border-radius: 6px; padding: 3px 7px; font-size: 12px; white-space: nowrap; text-align: center; line-height: 1.25; }
+.etq-medida small { display: block; font-size: 10.5px; opacity: .75; }
+.etq-medida.previa { background: var(--raised); color: var(--fg); border: 1px solid var(--line); }
 .barra-lapiz select { font-size: 12.5px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--raised); }
 .barra-lapiz span { color: var(--fg2); }
 /* Elementos por rubro y nivel */
@@ -317,7 +323,7 @@ label.hecho input { width: 16px; height: 16px; accent-color: var(--ink); }
   .logo { height: 30px; padding-right: 16px; }
   .arch-boton { padding: 5px 4px; }
   .columna-izq { width: 190px; }
-  .barra-corte, .barra-lapiz { left: 214px; max-width: calc(100% - 310px); }
+  .barra-corte, .barra-lapiz, .barra-medir { left: 214px; max-width: calc(100% - 352px); }
   .vistas { max-width: calc(100% - 226px); }
   .corte .cota { display: none; }
 
@@ -1332,10 +1338,25 @@ const REFS_EST = EL.filter(e => ['columna', 'tabique', 'viga'].includes(e.t)).ma
 const REFS_ARRIBA = EL.filter(e => ['losa', 'viga', 'escalera'].includes(e.t)).map(e => ({ nombre: e.n, tipo: NOM_TIPO[e.t], ...cajaPlano(e.v) }));
 const muroPorId = Object.fromEntries(ALB.muros.map(m => [m.id, m]));
 const mallaMuro = Object.fromEntries(MUROS.map(me => [me.userData.id.slice(5), me]));
+// Largo de un muro sobre el dibujo: el lado largo de su rectángulo. No se divide la planta por el espesor nominal
+// del tipo, porque en el CAD los muros están dibujados más finos o más gruesos que ese espesor y el largo salía
+// corrido en la misma proporción (M-P4-17a daba 1,84 m y mide 2,04). Los muros inclinados llegan como una escalera de
+// rectángulos: miden lo que su eje principal. Es la misma cuenta que hace alb/separar.js.
+function largoCajas(cajas) {
+  if (cajas.length === 1) { const r = cajas[0]; return Math.max(r[2] - r[0], r[3] - r[1]); }
+  let A = 0, mx = 0, my = 0; for (const r of cajas) { const a = (r[2] - r[0]) * (r[3] - r[1]); A += a; mx += a * (r[0] + r[2]) / 2; my += a * (r[1] + r[3]) / 2; }
+  if (!A) return 0; mx /= A; my /= A; let sxx = 0, syy = 0, sxy = 0;
+  for (const r of cajas) { const w = r[2] - r[0], h = r[3] - r[1], a = w * h, cx = (r[0] + r[2]) / 2 - mx, cy = (r[1] + r[3]) / 2 - my; sxx += a * (cx * cx + w * w / 12); syy += a * (cy * cy + h * h / 12); sxy += a * cx * cy; }
+  const t = 0.5 * Math.atan2(2 * sxy, sxx - syy), ux = Math.cos(t), uy = Math.sin(t); let lo = Infinity, hi = -Infinity;
+  for (const r of cajas) for (const [x, y] of [[r[0], r[1]], [r[2], r[1]], [r[0], r[3]], [r[2], r[3]]]) { const p = x * ux + y * uy; lo = Math.min(lo, p); hi = Math.max(hi, p); }
+  return hi - lo;
+}
+// Espesor dibujado del muro (para pasar a superficie lo que ocupa la estructura u otro muro)
+const espMuro = m => { const L = largoCajas(m.cajas); return L > 0 ? Math.max(1e-3, m.cajas.reduce((a, r) => a + (r[2] - r[0]) * (r[3] - r[1]), 0) / L) : 1e-3; };
 function recalcularMuro(m) {
   m.planta = m.cajas.reduce((a, r) => a + (r[2] - r[0]) * (r[3] - r[1]), 0);
   m.alto = +(m.z1 - m.z0).toFixed(3);
-  m.largo = +(m.planta / m.esp).toFixed(2); m.sup = +(m.largo * m.alto).toFixed(2); m.vol = +(m.planta * m.alto).toFixed(3);
+  m.largo = +largoCajas(m.cajas).toFixed(2); m.sup = +(m.largo * m.alto).toFixed(2); m.vol = +(m.planta * m.alto).toFixed(3);
 }
 function rehacerMuro(m) {
   const mesh = mallaMuro[m.id];
@@ -1376,7 +1397,7 @@ function estEnMuro(m) {
   const k = firmaMuro(m) + '|' + EL.length; if (m._est && m._est.k === k) return m._est.l;
   const porPieza = new Map();
   for (const r of m.cajas) {
-    const c = cajaDeMuro(r, m), esp = Math.max(1e-3, Math.min(c.x1 - c.x0, c.y1 - c.y0));
+    const c = cajaDeMuro(r, m), esp = m.cajas.length === 1 ? Math.max(1e-3, Math.min(c.x1 - c.x0, c.y1 - c.y0)) : espMuro(m);
     for (const it of EST_MURO) {
       const b = it.b; if (!EL.includes(it.e) || b.x1 <= c.x0 + 1e-3 || b.x0 >= c.x1 - 1e-3 || b.y1 <= c.y0 + 1e-3 || b.y0 >= c.y1 - 1e-3 || b.z1 <= c.z0 + 1e-3 || b.z0 >= c.z1 - 1e-3) continue;
       const x0 = Math.max(c.x0, b.x0), x1 = Math.min(c.x1, b.x1), y0 = Math.max(c.y0, b.y0), y1 = Math.min(c.y1, b.y1);
@@ -1402,7 +1423,7 @@ function entreMuros() {
     for (const ra of pierde.cajas) for (const rb of gana.cajas) {
       const A = cajaDeMuro(ra, pierde), B = cajaDeMuro(rb, gana);
       const dx = Math.min(A.x1, B.x1) - Math.max(A.x0, B.x0), dy = Math.min(A.y1, B.y1) - Math.max(A.y0, B.y0), dz = Math.min(A.z1, B.z1) - Math.max(A.z0, B.z0);
-      if (dx > 1e-3 && dy > 1e-3 && dz > 1e-3) sup += dx * dy * dz / Math.max(1e-3, Math.min(A.x1 - A.x0, A.y1 - A.y0));
+      if (dx > 1e-3 && dy > 1e-3 && dz > 1e-3) sup += dx * dy * dz / (pierde.cajas.length === 1 ? Math.max(1e-3, Math.min(A.x1 - A.x0, A.y1 - A.y0)) : espMuro(pierde));
     }
     if (sup > 1e-4) add(pierde, gana, sup);
   }
@@ -1416,11 +1437,11 @@ function netoMuro(m) {
 }
 const editado = m => ediciones[m.id] != null;
 for (const m of ALB.muros) {
-  m.cajasOrig = m.cajas.map(r => r.slice()); m.z1Orig = m.z1;
+  m.cajasOrig = m.cajas.map(r => r.slice()); m.z1Orig = m.z1; m.z0Orig = m.z0;
   const ed = ediciones[m.id];
-  if (ed) { const cajas = Array.isArray(ed) ? ed : ed.cajas; m.cajas = cajas.map(r => r.slice()); if (!Array.isArray(ed) && ed.z1) m.z1 = ed.z1; recalcularMuro(m); rehacerMuro(m); }
+  if (ed) { const cajas = Array.isArray(ed) ? ed : ed.cajas; m.cajas = cajas.map(r => r.slice()); if (!Array.isArray(ed) && ed.z1) m.z1 = ed.z1; if (!Array.isArray(ed) && ed.z0 != null) m.z0 = ed.z0; recalcularMuro(m); rehacerMuro(m); }
 }
-const largoOriginal = m => m.cajasOrig.reduce((a, r) => a + (r[2] - r[0]) * (r[3] - r[1]), 0) / m.esp;
+const largoOriginal = m => largoCajas(m.cajasOrig);
 
 // Puntas libres: para cada rectángulo del muro, las caras de su eje largo que no tocan otro rectángulo del mismo muro
 function puntasLibres(m) {
@@ -1460,9 +1481,18 @@ function ponerFlechas() {
     const r = m.cajas[p.k], mid = [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2]; mid[p.ej] = r[p.ej + p.lado * 2];
     nueva(v3(mid[0], mid[1], zc), p.ej === 0 ? new THREE.Vector3(p.lado ? 1 : -1, 0, 0) : new THREE.Vector3(0, 0, p.lado ? -1 : 1), p);
   }
-  // Altura: flecha en la cara superior, sobre el tramo más largo
+  // Altura: flechas en la cara superior (sube o baja el borde de arriba) y en la inferior (el arranque del muro),
+  // sobre el tramo más largo
   const k = m.cajas.map((r, i) => [i, Math.max(r[2] - r[0], r[3] - r[1])]).sort((a, b) => b[1] - a[1])[0][0], r = m.cajas[k];
   nueva(v3((r[0] + r[2]) / 2, (r[1] + r[3]) / 2, m.z1), new THREE.Vector3(0, 1, 0), { k, ej: 2, lado: 1 });
+  nueva(v3((r[0] + r[2]) / 2, (r[1] + r[3]) / 2, m.z0), new THREE.Vector3(0, -1, 0), { k, ej: 2, lado: 0 });
+  // Costados: una flecha en cada cara lateral del tramo más largo. Corre el muro entero de costado sin cambiar
+  // su espesor (el espesor define el tipo de muro y sus materiales), para apoyarlo contra una cara de otra pieza.
+  const lat = (r[2] - r[0]) >= (r[3] - r[1]) ? 1 : 0;
+  for (const lado of [0, 1]) {
+    const mid = [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2]; mid[lat] = r[lat + lado * 2];
+    nueva(v3(mid[0], mid[1], zc), lat === 0 ? new THREE.Vector3(lado ? 1 : -1, 0, 0) : new THREE.Vector3(0, 0, lado ? -1 : 1), { k, ej: lat, lado, lateral: true });
+  }
   escalarFlechas(); grupoFlechas.updateMatrixWorld(true);     // para poder agarrarlas antes del próximo cuadro
 }
 window.__agarres = ponerFlechas; window.__flechas = () => escalarFlechas(); window.__foco = () => aplicarFoco();
@@ -1471,7 +1501,7 @@ function editarMuro(id) { enEdicion = id; if (seleccion !== id) elegir(id); else
 function salirEdicion() { if (!enEdicion) return; enEdicion = null; ponerFlechas(); }
 
 // Enganche del largo: candidatos sobre el eje que se mueve
-function engancharEn(m, k, ej, u, tol) {
+function engancharEn(m, k, ej, u, tol, sinPropio) {
   const r = m.cajas[k], l0 = r[1 - ej], l1 = r[1 - ej + 2];
   let mejor = null;
   const probar = (c, ref, contacto) => { const d = Math.abs(c - u) * (contacto ? 0.6 : 1); if (Math.abs(c - u) <= tol && (!mejor || d < mejor.d)) mejor = { c, d, ref, contacto }; };
@@ -1484,7 +1514,7 @@ function engancharEn(m, k, ej, u, tol) {
   for (const o of ALB.muros) {
     if (o.piso !== m.piso) continue;
     o.cajas.forEach((q, j) => {
-      if (o === m && j === k) return;
+      if (o === m && (j === k || sinPropio)) return;     // al correr el muro entero, sus otros tramos se mueven con él
       const contacto = Math.min(l1, q[1 - ej + 2]) - Math.max(l0, q[1 - ej]) > -0.03;
       const ref = { nombre: o.nombre, tipo: 'Muro', x0: q[0], x1: q[2], y0: q[1], y1: q[3], z0: o.z0, z1: o.z1 };
       probar(q[ej], ref, contacto); probar(q[ej + 2], ref, contacto);
@@ -1502,6 +1532,16 @@ function engancharAlto(m, u, tol) {
   for (const n of NIV) if (n.z > m.z0 + 0.3) probar(n.z, null, false, `al nivel <b>${esc(n.corto)}</b> (${fmt(n.z)})`);
   return mejor;
 }
+// Enganche de la base: cara superior de una losa o viga debajo, base de otros muros del piso o un nivel del edificio
+function engancharBase(m, u, tol) {
+  let mejor = null;
+  const probar = (c, ref, contacto, texto) => { const d = Math.abs(c - u) * (contacto ? 0.6 : 1); if (Math.abs(c - u) <= tol && (!mejor || d < mejor.d)) mejor = { c, d, ref, contacto, texto }; };
+  const sobre = b => m.cajas.some(r => Math.min(r[2], b.x1) - Math.max(r[0], b.x0) > 0.01 && Math.min(r[3], b.y1) - Math.max(r[1], b.y0) > 0.01);
+  for (const b of REFS_ARRIBA) if (b.z1 < m.z1 - 0.3 && sobre(b)) probar(b.z1, b, true, `apoyado sobre <b>${esc(b.nombre)}</b> <span style="color:var(--muted)">(${esc(b.tipo)})</span>`);
+  for (const o of ALB.muros) if (o !== m && o.piso === m.piso) probar(o.z0, { nombre: o.nombre, tipo: 'Muro', x0: o.cajas[0][0], x1: o.cajas[0][2], y0: o.cajas[0][1], y1: o.cajas[0][3], z0: o.z0, z1: o.z1 }, false, `a la base de <b>${esc(o.nombre)}</b>`);
+  for (const n of NIV) if (n.z < m.z1 - 0.3) probar(n.z, null, false, `al nivel <b>${esc(n.corto)}</b> (${fmt(n.z)})`);
+  return mejor;
+}
 const ray2 = new THREE.Raycaster(), ptr2 = new THREE.Vector2();
 function rayoDesde(ev) { const r = lienzo.getBoundingClientRect(); ptr2.set((ev.clientX - r.left) / r.width * 2 - 1, -(ev.clientY - r.top) / r.height * 2 + 1); ray2.setFromCamera(ptr2, camVista()); return r; }
 // Punto del eje de la flecha más cercano al rayo del mouse (x, y del plano o z de altura)
@@ -1513,7 +1553,7 @@ function puntoEnEje(ev, f) {
   const p = o.addScaledVector(d, t);
   return f.userData.ej === 0 ? p.x + OX : f.userData.ej === 1 ? -p.z + OY : p.y;
 }
-const caraDe = (m, d) => d.ej === 2 ? m.z1 : m.cajas[d.k][d.ej + d.lado * 2];
+const caraDe = (m, d) => d.ej === 2 ? (d.lado ? m.z1 : m.z0) : m.cajas[d.k][d.ej + d.lado * 2];
 lienzo.addEventListener('pointerdown', ev => {
   if (!flechas.length) return;
   camara.updateMatrixWorld(); grupoFlechas.updateMatrixWorld(true); rayoDesde(ev);
@@ -1523,7 +1563,7 @@ lienzo.addEventListener('pointerdown', ev => {
   const f = hit.object, m = muroPorId[f.userData.muro];
   // Se guarda la distancia entre el punto agarrado y la cara, para que no salte al empezar a arrastrar.
   if (f.userData.ej === 'mover') arrastre = { f, m, mover: true, base: puntoPlano(ev, f.position.y), cajas0: m.cajas.map(r => r.slice()), antes: estadoMuro(m) };
-  else arrastre = { f, m, desfase: caraDe(m, f.userData) - puntoEnEje(ev, f), antes: estadoMuro(m) };
+  else arrastre = { f, m, desfase: caraDe(m, f.userData) - puntoEnEje(ev, f), cajas0: m.cajas.map(r => r.slice()), antes: estadoMuro(m) };
 }, { capture: true });
 lienzo.addEventListener('pointermove', ev => {
   if (!arrastre) {
@@ -1535,13 +1575,23 @@ lienzo.addEventListener('pointermove', ev => {
   }
   ev.stopImmediatePropagation();
   if (arrastre.mover) { moverMuro(ev); return; }
-  const { f, m } = arrastre, { k, ej, lado } = f.userData;
-  let u = puntoEnEje(ev, f) + arrastre.desfase, sn = null, texto;
+  const { f, m } = arrastre, { k, ej, lado, lateral } = f.userData;
+  let u = puntoEnEje(ev, f) + arrastre.desfase, sn = null, texto, corrido = 0;
   const tol = Math.max(0.05, camara.position.distanceTo(f.position) * 0.01);
-  if (ej === 2) {
+  if (ej === 2 && lado) {
     u = Math.max(u, m.z0 + 0.3);
     sn = ev.altKey ? null : engancharAlto(m, u, tol); if (sn) u = sn.c;
     m.z1 = +u.toFixed(3);
+  } else if (ej === 2) {
+    u = Math.min(u, m.z1 - 0.3);                                        // muro de al menos 30 cm de alto
+    sn = ev.altKey ? null : engancharBase(m, u, tol); if (sn) u = sn.c;
+    m.z0 = +u.toFixed(3);
+  } else if (lateral) {
+    // Se corren todos los tramos lo mismo; la cara agarrada es la que se engancha
+    sn = ev.altKey ? null : engancharEn(m, k, ej, u, tol, true); if (sn) u = sn.c;
+    corrido = u - arrastre.cajas0[k][ej + lado * 2];
+    m.cajas = arrastre.cajas0.map(q => { const n = q.slice(); n[ej] = +(q[ej] + corrido).toFixed(3); n[ej + 2] = +(q[ej + 2] + corrido).toFixed(3); return n; });
+    if (sn) sn.texto = `${sn.contacto ? 'contra' : 'alineado con'} <b>${esc(sn.ref.nombre)}</b> <span style="color:var(--muted)">(${esc(sn.ref.tipo)})</span>`;
   } else {
     const r = m.cajas[k], otro = r[ej + (1 - lado) * 2];
     u = lado ? Math.max(u, otro + 0.1) : Math.min(u, otro - 0.1);       // tramo de al menos 10 cm
@@ -1551,7 +1601,7 @@ lienzo.addEventListener('pointermove', ev => {
   }
   recalcularMuro(m); rehacerMuro(m); ponerFlechas();
   // Guía y referencia
-  const r = m.cajas[k], zc = ej === 2 ? m.z1 : (m.z0 + m.z1) / 2;
+  const r = m.cajas[k], zc = ej === 2 ? (lado ? m.z1 : m.z0) : (m.z0 + m.z1) / 2;
   if (sn && sn.ref) {
     const b = sn.ref, enEje = [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2], refC = [(b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2];
     if (ej < 2) { enEje[ej] = u; refC[ej] = u; }
@@ -1559,15 +1609,15 @@ lienzo.addEventListener('pointermove', ev => {
     guia.geometry.dispose(); guia.geometry = new THREE.BufferGeometry().setFromPoints([pA.clone().sub(ext), pB.clone().add(ext)]); guia.computeLineDistances(); guia.visible = true;
     cajaRef.box.set(v3(b.x0, b.y1, b.z0), v3(b.x1, b.y0, b.z1)); cajaRef.visible = true;
   } else { guia.visible = false; cajaRef.visible = false; }
-  const medida = ej === 2 ? `<b class="num">${fmt(m.alto, 2)} m</b> de alto` : `<b class="num">${fmt(m.largo, 2)} m</b> de muro${m.cajas.length > 1 ? ` · tramo ${fmt(r[ej + 2] - r[ej], 2)} m` : ''}`;
+  const medida = ej === 2 ? `<b class="num">${fmt(m.alto, 2)} m</b> de alto${lado ? '' : ` · base ${fmt(m.z0, 2)}`}` : lateral ? `corrido <b class="num">${fmt(Math.abs(corrido) * 100, 1)} cm</b>` : `<b class="num">${fmt(m.largo, 2)} m</b> de muro${m.cajas.length > 1 ? ` · tramo ${fmt(r[ej + 2] - r[ej], 2)} m` : ''}`;
   etqEdicion.innerHTML = `${medida}${sn ? ' · ' + sn.texto : ' <span style="color:var(--muted)">· Alt: sin enganche</span>'}`;
   const rc = lienzo.getBoundingClientRect(); etqEdicion.hidden = false;
   etqEdicion.style.left = Math.min(ev.clientX - rc.left + 16, rc.width - etqEdicion.offsetWidth - 8) + 'px'; etqEdicion.style.top = Math.max(8, ev.clientY - rc.top - 34) + 'px';
 }, { capture: true });
 function guardarEdicion(m) {
   if (m.nuevo) { guardarNuevos(); return; }
-  const igualCajas = m.cajas.every((r, i) => r.every((v, j) => Math.abs(v - m.cajasOrig[i][j]) < 1e-4)), igualAlto = Math.abs(m.z1 - m.z1Orig) < 1e-4;
-  if (igualCajas && igualAlto) delete ediciones[m.id]; else ediciones[m.id] = { cajas: m.cajas, z1: m.z1 };
+  const igualCajas = m.cajas.every((r, i) => r.every((v, j) => Math.abs(v - m.cajasOrig[i][j]) < 1e-4)), igualAlto = Math.abs(m.z1 - m.z1Orig) < 1e-4 && Math.abs(m.z0 - m.z0Orig) < 1e-4;
+  if (igualCajas && igualAlto) delete ediciones[m.id]; else ediciones[m.id] = { cajas: m.cajas, z0: m.z0, z1: m.z1 };
   guardar('murosEditados', ediciones);
 }
 const terminarArrastre = ev => {
@@ -1591,7 +1641,7 @@ lienzo.addEventListener('dblclick', ev => {
 });
 addEventListener('keydown', ev => { if (ev.key === 'Escape' && enEdicion) { ev.stopImmediatePropagation(); salirEdicion(); refrescarResumen(); } }, true);
 function restablecerMuro(id) {
-  const m = muroPorId[id]; m.cajas = m.cajasOrig.map(r => r.slice()); m.z1 = m.z1Orig; delete ediciones[id]; guardar('murosEditados', ediciones);
+  const m = muroPorId[id]; m.cajas = m.cajasOrig.map(r => r.slice()); m.z1 = m.z1Orig; if (m.z0Orig != null) m.z0 = m.z0Orig; delete ediciones[id]; guardar('murosEditados', ediciones);
   recalcularMuro(m); rehacerMuro(m); ponerFlechas(); refrescarKpis(); if (pestana === 'albanileria') refrescarAlbanileria(); refrescarResumen();
 }
 
@@ -1771,9 +1821,9 @@ function refrescarTodo() {
 }
 function deshacer() { const a = historial.pop(); if (!a) { avisoBreve('No hay nada para deshacer'); return; } a.deshacer(); rehechos.push(a); refrescarTodo(); avisoBreve('Deshecho: ' + a.nombre); }
 function rehacer() { const a = rehechos.pop(); if (!a) { avisoBreve('No hay nada para rehacer'); return; } a.rehacer(); historial.push(a); refrescarTodo(); avisoBreve('Rehecho: ' + a.nombre); }
-const estadoMuro = m => ({ cajas: m.cajas.map(r => r.slice()), z1: m.z1 });
-const mismoEstado = (a, b) => a.z1 === b.z1 && a.cajas.length === b.cajas.length && a.cajas.every((r, i) => r.every((v, j) => Math.abs(v - b.cajas[i][j]) < 1e-5));
-function ponerEstadoMuro(m, s) { m.cajas = s.cajas.map(r => r.slice()); m.z1 = s.z1; recalcularMuro(m); rehacerMuro(m); guardarEdicion(m); ponerFlechas(); }
+const estadoMuro = m => ({ cajas: m.cajas.map(r => r.slice()), z0: m.z0, z1: m.z1 });
+const mismoEstado = (a, b) => a.z0 === b.z0 && a.z1 === b.z1 && a.cajas.length === b.cajas.length && a.cajas.every((r, i) => r.every((v, j) => Math.abs(v - b.cajas[i][j]) < 1e-5));
+function ponerEstadoMuro(m, s) { m.cajas = s.cajas.map(r => r.slice()); m.z1 = s.z1; if (s.z0 != null) m.z0 = s.z0; recalcularMuro(m); rehacerMuro(m); guardarEdicion(m); ponerFlechas(); }
 function nombreDe(id) {
   const s = SANP[id]; if (s) return s.k === 'muro' ? s.o.nombre : s.k === 'tramo' ? `Ø${Math.round(s.o.d * 1000)} ${SAN.sistemas[s.o.sis]}` : s.k === 'artefacto' ? NOM_ART[s.o.tipo] : id;
   return porId[id] ? porId[id].n : id;
@@ -2208,10 +2258,10 @@ function fichaSan(id) {
     if (s.o.tipo === 'ppa') med.push(['Bocas', String((s.o.entradas || []).length + 1)]);
   } else if (s.k === 'muro') {
     const m = s.o; let extraMuro = ''; titulo = m.nombre; sub = `${TIPO_MURO[m.tipo]} · ${NOM_PISO_MURO[m.piso]}`; color = `var(--a-${m.tipo})`;
-    med = [['Espesor', fmt(m.esp * 100, 0) + ' cm'], ['Largo', fmt(m.largo, 2) + ' m'], ['Alto', fmt(m.alto, 2) + ' m'], ['Superficie', fmt(netoMuro(m).sup, 2) + ' m²'], ['Volumen', fmt(netoMuro(m).vol, 3) + ' m³'], ['Ladrillos', fmt(ladrillosDe({ ...m, sup: netoMuro(m).sup }), 0)]];
+    { const ed = espMuro(m); med = [['Espesor', fmt(m.esp * 100, 0) + ' cm' + (Math.abs(ed - m.esp) >= 0.015 ? ` · dibujado ${fmt(ed * 100, 0)}` : '')], ['Largo', fmt(m.largo, 2) + ' m'], ['Alto', fmt(m.alto, 2) + ' m'], ['Superficie', fmt(netoMuro(m).sup, 2) + ' m²'], ['Volumen', fmt(netoMuro(m).vol, 3) + ' m³'], ['Ladrillos', fmt(ladrillosDe({ ...m, sup: netoMuro(m).sup }), 0)]]; }
     { const n = netoMuro(m); if (n.desc > 0.005) { med.push(['Sup. bruta', fmt(m.sup, 2) + ' m²']);
       extraMuro = `<div class="comparar"><span>Descuenta <b>${fmt(n.desc, 2)} m²</b> que ocupa${n.est.length + n.mur.length > 1 ? 'n' : ''} ${[...n.est, ...n.mur].map(x => `${esc(x.con)} (${fmt(x.sup, 2)})`).join(', ')}: ahí no hay mampostería${n.mur.length ? ' o ya se cuenta en el otro muro' : ''}.</span></div>`; } }
-    extra = extraMuro + `<div class="comparar"><span>${enEdicion === 'muro:' + m.id ? '<b>Editando:</b> arrastrá las flechas de las puntas (largo) o la de arriba (altura); o agarrá el muro para moverlo; se engancha con columnas, vigas, losas y otros muros. Shift: mover en una sola dirección. Alt: sin enganche. Esc: terminar. Ctrl+Z deshace.' : 'Doble clic sobre el muro para editar su largo y su altura.'}</span>${m.sinLosa ? `<span>Sin losa arriba: se tomó una altura de ${fmt(m.alto, 2)} m (muro de azotea).</span>` : ''}${m.nuevo ? `<span class="dif">Muro agregado en el tablero (no está en el CAD).</span>` : ''}${editado(m) && !m.nuevo ? `<span class="dif">Modificado (original: ${fmt(largoOriginal(m), 2)} m de largo × ${fmt(m.z1Orig - m.z0, 2)} m de alto).</span><button type="button" class="btn" data-restablecer-muro="${m.id}" style="justify-self:start;margin-top:4px">Volver al original</button>` : ''}</div>`;
+    extra = extraMuro + `<div class="comparar"><span>${enEdicion === 'muro:' + m.id ? '<b>Editando:</b> arrastrá las flechas de las puntas (largo), la de arriba o la de abajo (altura y arranque) o las de los costados (corren el muro sin cambiar su espesor); o agarrá el muro para moverlo; se engancha con columnas, vigas, losas y otros muros. Shift: mover en una sola dirección. Alt: sin enganche. Esc: terminar. Ctrl+Z deshace.' : 'Doble clic sobre el muro para editar su largo y su altura.'}</span>${m.sinLosa ? `<span>Sin losa arriba: se tomó una altura de ${fmt(m.alto, 2)} m (muro de azotea).</span>` : ''}${m.nuevo ? `<span class="dif">Muro agregado en el tablero (no está en el CAD).</span>` : ''}${editado(m) && !m.nuevo ? `<span class="dif">Modificado (original: ${fmt(largoOriginal(m), 2)} m de largo × ${fmt(m.z1Orig - m.z0, 2)} m de alto).</span><button type="button" class="btn" data-restablecer-muro="${m.id}" style="justify-self:start;margin-top:4px">Volver al original</button>` : ''}</div>`;
   } else if (s.k === 'artefacto') {
     const a = s.o; titulo = NOM_ART[a.tipo]; sub = NOM_PISO[a.piso]; color = 'var(--fg2)';
     med = [['Descarga', a.sinDescarga ? 'no ubicada' : `Ø${Math.round(a.d * 1000)}`], ['Va a', a.sinDescarga ? '—' : SAN.sistemas[a.sis]], ['Nivel de piso', fmt(a.z) + ' m']];
@@ -2775,6 +2825,146 @@ window.__dibujar = () => {
   const cv = camVista(); renderer.render(escena, cv);
   if (corte) { renderer.clippingPlanes = []; renderer.autoClear = false; renderer.render(escenaCorte, cv); renderer.autoClear = true; }
 };
+// ---------- Medir: clic en dos puntos del modelo y muestra la distancia ----------
+// Sirve para controlar medidas contra los planos. El punto se engancha a lo más preciso que haya cerca del
+// mouse: primero un vértice (esquina de una pieza), después una arista y si no, el punto de la cara tocada.
+// Solo se toman como aristas los bordes alineados con los ejes: los diagonales son los cortes internos de los
+// triángulos con que se dibujan las caras, no bordes reales de la pieza.
+// Shift traba la medida en el eje dominante (largo, ancho o alto) desde el primer punto.
+// Las medidas quedan en pantalla hasta borrarlas; se dibujan en una escena aparte, sin recortar por el plano de sección.
+const escenaMedir = new THREE.Scene();
+const matMedir = new THREE.LineBasicMaterial({ color: css('--ink'), depthTest: false });
+const matMedirPrevia = new THREE.LineDashedMaterial({ color: css('--ink'), dashSize: 0.1, gapSize: 0.06, depthTest: false });
+const geoPuntoMedir = new THREE.SphereGeometry(1, 12, 8);
+const matPuntoMedir = new THREE.MeshBasicMaterial({ color: css('--ink'), depthTest: false });
+const matPuntoVertice = new THREE.MeshBasicMaterial({ color: '#f2a900', depthTest: false });
+const capaMedir = document.createElement('div'); capaMedir.className = 'capa-medir'; lienzo.parentElement.append(capaMedir);
+const barraMedir = document.createElement('div'); barraMedir.className = 'flota barra-medir'; barraMedir.hidden = true;
+barraMedir.innerHTML = `<b>Medir</b><span id="medirAyuda"></span><button type="button" class="btn" id="medirBorrar">Borrar medidas</button><button type="button" class="btn" id="medirSalir">Terminar</button>`;
+lienzo.parentElement.append(barraMedir);
+let medir = null;                 // { a: Vector3 | null } mientras la herramienta está activa
+const medidas = [];               // { a, b, linea, pa, pb, etq }
+let puntoMedir = null;            // { p: Vector3, tipo: 'vértice' | 'arista' | 'cara', nombre }
+const cursorMedir = new THREE.Mesh(geoPuntoMedir, matPuntoMedir); cursorMedir.visible = false; escenaMedir.add(cursorMedir);
+const lineaPrevia = new THREE.Line(new THREE.BufferGeometry(), matMedirPrevia); lineaPrevia.visible = false; escenaMedir.add(lineaPrevia);
+const etqPrevia = document.createElement('div'); etqPrevia.className = 'etq-medida previa'; etqPrevia.hidden = true; capaMedir.append(etqPrevia);
+
+const aPantalla = (v, rc) => { const p = v.clone().project(camVista()); return { x: (p.x + 1) / 2 * rc.width, y: (1 - p.y) / 2 * rc.height, z: p.z }; };
+// Punto enganchado bajo el mouse
+function puntoBajoMouse(ev) {
+  const rc = rayoDesde(ev), mx = ev.clientX - rc.left, my = ev.clientY - rc.top;
+  const cand = [...mallas, ...sanMallas].filter(m => { for (let o = m; o; o = o.parent) if (!o.visible) return false; return true; });
+  const hit = ray2.intersectObjects(cand, false).find(h => !corte || delLado(h.point)); if (!hit || !hit.face) return null;
+  const o = hit.object, pos = o.geometry.attributes.position;
+  const vs = [hit.face.a, hit.face.b, hit.face.c].map(i => new THREE.Vector3().fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld));
+  const dPx = v => { const s = aPantalla(v, rc); return Math.hypot(s.x - mx, s.y - my); };
+  const nombre = porId[o.userData.id]?.n || (SANP[o.userData.id] && nombreDe(o.userData.id)) || '';
+  // Vértice a menos de 14 px
+  let mejor = null; for (const v of vs) { const d = dPx(v); if (d < 14 && (!mejor || d < mejor.d)) mejor = { d, p: v }; }
+  if (mejor) return { p: mejor.p, tipo: 'vértice', nombre };
+  // Arista alineada con un eje a menos de 8 px
+  for (let i = 0; i < 3; i++) {
+    const a = vs[i], b = vs[(i + 1) % 3], ab = b.clone().sub(a), L = ab.length(); if (L < 1e-4) continue;
+    if (Math.max(Math.abs(ab.x), Math.abs(ab.y), Math.abs(ab.z)) / L < 0.999) continue;
+    const t = THREE.MathUtils.clamp(hit.point.clone().sub(a).dot(ab) / (L * L), 0, 1), q = a.clone().addScaledVector(ab, t), d = dPx(q);
+    if (d < 8 && (!mejor || d < mejor.d)) mejor = { d, p: q };
+  }
+  if (mejor) return { p: mejor.p, tipo: 'arista', nombre };
+  return { p: hit.point.clone(), tipo: 'cara', nombre };
+}
+// Con Shift, el segundo punto se traba sobre el eje dominante desde el primero
+function trabar(a, p) {
+  const d = p.clone().sub(a), ax = Math.abs(d.x), ay = Math.abs(d.y), az = Math.abs(d.z), q = a.clone();
+  if (ax >= ay && ax >= az) q.x = p.x; else if (ay >= az) q.y = p.y; else q.z = p.z; return q;
+}
+// Texto de la medida: distancia real y, si es inclinada, sus partes en planta y en alto
+function textoMedida(a, b) {
+  const d = b.clone().sub(a), planta = Math.hypot(d.x, d.z), alto = Math.abs(d.y), tot = d.length();
+  const partes = planta > 0.005 && alto > 0.005 ? `<small>en planta ${fmt(planta, 2)} · alto ${fmt(alto, 2)}</small>` : '';
+  return `<b class="num">${fmt(tot, 2)} m</b>${partes}`;
+}
+// Radio del punto: unos 4 px en pantalla, con la cámara que esté en uso
+const escalaPunto = v => { const alto = lienzo.clientHeight || 600; if (paralela) { const c = camVista(); return 4 * (c.top - c.bottom) / c.zoom / alto; } return 4 * 2 * camara.position.distanceTo(v) * Math.tan(THREE.MathUtils.degToRad(camara.fov / 2)) / alto; };
+function moverMedir(ev) {
+  const sn = puntoBajoMouse(ev); puntoMedir = sn;
+  if (!sn) { cursorMedir.visible = false; lineaPrevia.visible = false; etqPrevia.hidden = true; return; }
+  let p = sn.p; if (medir.a && ev.shiftKey) p = trabar(medir.a, p); puntoMedir = { ...sn, p };
+  cursorMedir.position.copy(p); cursorMedir.scale.setScalar(escalaPunto(p) * 1.3); cursorMedir.material = sn.tipo === 'vértice' ? matPuntoVertice : matPuntoMedir; cursorMedir.visible = true;
+  const tipo = { 'vértice': 'vértice', arista: 'arista', cara: 'cara' }[sn.tipo] + (sn.nombre ? ' de ' + esc(sn.nombre) : '');
+  if (medir.a) {
+    lineaPrevia.geometry.dispose(); lineaPrevia.geometry = new THREE.BufferGeometry().setFromPoints([medir.a, p]); lineaPrevia.computeLineDistances(); lineaPrevia.visible = true;
+    etqPrevia.innerHTML = textoMedida(medir.a, p); etqPrevia.hidden = false;
+    etqPrevia._a = medir.a; etqPrevia._b = p;
+  }
+  $('#medirAyuda').innerHTML = (medir.a ? 'Clic en el segundo punto · Shift: en línea recta · ' : 'Clic en el primer punto · ') + `<span style="color:var(--muted)">${tipo}</span>`;
+}
+function clicMedir() {
+  if (!puntoMedir) return;
+  if (!medir.a) { medir.a = puntoMedir.p.clone(); return; }
+  const a = medir.a, b = puntoMedir.p.clone(); medir.a = null; lineaPrevia.visible = false; etqPrevia.hidden = true;
+  if (a.distanceTo(b) < 0.001) return;
+  const linea = new THREE.Line(new THREE.BufferGeometry().setFromPoints([a, b]), matMedir);
+  const pa = new THREE.Mesh(geoPuntoMedir, matPuntoMedir), pb = new THREE.Mesh(geoPuntoMedir, matPuntoMedir); pa.position.copy(a); pb.position.copy(b); pa.scale.setScalar(escalaPunto(a)); pb.scale.setScalar(escalaPunto(b));
+  escenaMedir.add(linea, pa, pb);
+  const etq = document.createElement('div'); etq.className = 'etq-medida'; etq.innerHTML = textoMedida(a, b); etq._a = a; etq._b = b; capaMedir.append(etq);
+  medidas.push({ a, b, linea, pa, pb, etq });
+}
+function borrarMedidas() { for (const m of medidas) { escenaMedir.remove(m.linea, m.pa, m.pb); m.linea.geometry.dispose(); m.etq.remove(); } medidas.length = 0; }
+function empezarMedir() {
+  if (typeof lapiz !== 'undefined' && lapiz) terminarLapiz();
+  salirEdicion(); menuCtx.hidden = true;
+  medir = { a: null }; barraMedir.hidden = false; $('#botonMedir').setAttribute('aria-pressed', 'true'); lienzo.style.cursor = 'crosshair';
+  $('#medirAyuda').textContent = 'Clic en el primer punto';
+}
+function terminarMedir() {
+  medir = null; puntoMedir = null; cursorMedir.visible = false; lineaPrevia.visible = false; etqPrevia.hidden = true;
+  barraMedir.hidden = true; $('#botonMedir').setAttribute('aria-pressed', 'false'); lienzo.style.cursor = '';
+}
+$('#medirSalir').onclick = terminarMedir;
+$('#medirBorrar').onclick = borrarMedidas;
+let bajoMedir = null;
+lienzo.addEventListener('pointerdown', ev => { if (medir) bajoMedir = [ev.clientX, ev.clientY]; }, { capture: true });
+lienzo.addEventListener('pointermove', ev => { if (!medir || ev.buttons) return; ev.stopImmediatePropagation(); tip.hidden = true; moverMedir(ev); }, { capture: true });
+lienzo.addEventListener('pointerup', ev => {
+  if (!medir) return;
+  if (bajoMedir && Math.hypot(ev.clientX - bajoMedir[0], ev.clientY - bajoMedir[1]) <= 5) { ev.stopImmediatePropagation(); abajo = null; moverMedir(ev); clicMedir(); }
+  bajoMedir = null;
+}, { capture: true });
+lienzo.addEventListener('dblclick', ev => { if (medir) ev.stopImmediatePropagation(); }, { capture: true });
+addEventListener('keydown', ev => {
+  if (ev.key !== 'Escape' || !medir) return; ev.stopImmediatePropagation();
+  if (medir.a) { medir.a = null; lineaPrevia.visible = false; etqPrevia.hidden = true; $('#medirAyuda').textContent = 'Clic en el primer punto'; } else terminarMedir();
+}, true);
+{ // botón de la regla, abajo a la derecha entre el lápiz y el plano de sección
+  const b = document.createElement('button'); b.type = 'button'; b.id = 'botonMedir'; b.setAttribute('aria-pressed', 'false');
+  b.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 16.5L16.5 3l4.5 4.5L7.5 21z"/><path d="M7 12.5l2 2M10 9.5l1.5 1.5M13 6.5l2 2"/></svg>`;
+  b.title = 'Medir'; b.setAttribute('aria-label', 'Medir');
+  b.onclick = () => medir ? terminarMedir() : empezarMedir();
+  $('#botonLapiz').after(b);
+  $('#botonLapiz').addEventListener('click', () => { if (medir) terminarMedir(); }, true);
+}
+// Cada cuadro: puntos del mismo tamaño en pantalla y etiquetas sobre el medio de cada medida
+{ const etqBase = window.__etq;
+  window.__etq = () => {
+    if (etqBase) etqBase();
+    if (!medidas.length && !medir) return;
+    const rc = lienzo.getBoundingClientRect();
+    // Si está abierta la barra del plano de sección, la de medir va arriba de ella
+    const bc = document.querySelector('.barra-corte'); barraMedir.style.bottom = bc && !bc.hidden && bc.offsetHeight ? 20 + bc.offsetHeight + 'px' : '';
+    for (const m of medidas) { m.pa.scale.setScalar(escalaPunto(m.a)); m.pb.scale.setScalar(escalaPunto(m.b)); }
+    if (cursorMedir.visible) cursorMedir.scale.setScalar(escalaPunto(cursorMedir.position) * 1.3);
+    for (const e of [...medidas.map(m => m.etq), etqPrevia]) {
+      if (e.hidden || !e._a) continue;
+      const s = aPantalla(e._a.clone().add(e._b).multiplyScalar(0.5), rc);
+      e.style.visibility = s.z > 1 ? 'hidden' : '';
+      e.style.left = s.x + 'px'; e.style.top = s.y + 'px';
+    }
+  }; }
+{ const dibujarBase = window.__dibujar;
+  window.__dibujar = () => {
+    dibujarBase();
+    if (escenaMedir.children.length > 2 || cursorMedir.visible || lineaPrevia.visible) { renderer.clippingPlanes = []; renderer.autoClear = false; renderer.render(escenaMedir, camVista()); renderer.autoClear = true; }
+  }; }
 // Plano guardado (los guardados antes de los cortes verticales traen { z, arriba })
 { const g = leer('corte', null);
   if (g && Number.isFinite(g.c) && ['x', 'y', 'z'].includes(g.eje)) ponerCorte(g.c, false, !!g.mas, g.eje);
