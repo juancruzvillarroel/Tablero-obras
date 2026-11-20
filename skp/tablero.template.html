@@ -297,6 +297,13 @@ details.rubro > summary span { font-size: 12px; color: var(--muted); }
 .nivel-cab .izq { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--fg); font-weight: 600; font-size: 12.5px; }
 .nivel-cab { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; background: var(--surface); font-size: 12.5px; font-weight: 600; }
 .nivel-cab label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+.nivel-cab .der { display: flex; align-items: center; gap: 4px; }
+/* Ojo para prender o apagar un elemento o todo un nivel */
+.ojo { border: 0; background: none; color: var(--muted); width: 26px; height: 24px; border-radius: 6px; display: inline-grid; place-items: center; cursor: pointer; padding: 0; }
+.ojo:hover { background: var(--hover); color: var(--fg); }
+.ojo[aria-pressed="false"] { color: var(--fg); }
+.ojo:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+tr.apagado td:not(:last-child) { opacity: .45; }
 .nivel-cab span { font-weight: 400; color: var(--muted); font-size: 12px; }
 table.obra td { padding: 4px 8px; font-size: 12.5px; }
 table.obra td.sec { color: var(--fg2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
@@ -560,6 +567,8 @@ let precios = leer('precios', { hormigon: '', encofrado: '', acero: '' });
 let desperdicio = leer('desperdicio', 5);
 // Avance de obra: cada elemento de cualquier rubro está hecho o no (se tilda en Elementos o en su ficha).
 const hechos = leer('hechos', {});
+// Elementos apagados a mano con el ojo de la lista o de la ficha (por obra y por navegador). No se ven ni se cuentan.
+const ocultos = new Set(leer('ocultos', []));
 { const viejos = leer('estados', null); if (viejos) { for (const [id, v] of Object.entries(viejos)) if (v === 'hormigonado') hechos[id] = true; } }
 const hecho = id => !!hechos[id];
 const est = id => hecho(id) ? 'hormigonado' : 'pendiente';
@@ -731,13 +740,15 @@ function colorDe(e) {
   return css(ESTADOS.find(x => x[0] === est(e.id))[2]);
 }
 function visible(e) {
-  if (!tiposOn[e.t]) return false;
+  if (!tiposOn[e.t] || ocultos.has(e.id)) return false;
   // Con el lápiz activo el piso se ve en corte: sin la losa ni las vigas de arriba, y con la losa de abajo como base.
   if (typeof lapiz !== 'undefined' && lapiz && nivelSel) { const i = nivIdx[nivelSel]; if (e.l === nivelSel) return !['losa', 'viga', 'escalera'].includes(e.t); return i > 0 && e.l === NIV[i - 1].id && e.t === 'losa'; }
   if (nivelSel == null) return true;
   return hastaAca ? nivIdx[e.l] <= nivIdx[nivelSel] : e.l === nivelSel;
 }
 const BLANCO = new THREE.Color(0xffffff);
+const TRANSP_FOCO = 0.16;                       // opacidad de lo que no es el elemento elegido
+const bordeTenue = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.08, depthWrite: false });
 function pintar() {
   const cache = {}; const col = e => { const k = modo === 'instalacion' ? (VIGAS_CRUZADAS.has(e.id) ? 'x' : 'g') : modo === 'tipo' ? e.t : modo === 'nivel' ? e.l : est(e.id); return cache[k] ??= colorDe(e); };
   for (const e of EL) {
@@ -746,15 +757,16 @@ function pintar() {
     if (modo === 'tipo' || modo === 'avance') vestir(mat, e.t);
     else { const c = capaEstado[e.t], mapa = modo !== 'instalacion' && c && c.tex && c.tex !== 'liso' ? TEX[c.tex] : null; if (mat.map !== mapa) { mat.map = mapa; mat.needsUpdate = true; } mat.color.set(col(e)); }
     const inst = modo === 'instalacion' && !VIGAS_CRUZADAS.has(e.id);
-    // Con un elemento elegido, el resto se aclara pero sigue opaco (se lee como sólido, no como rayos X).
-    // La transparencia queda solo para el modo Instalación, donde sirve para ver los caños.
+    // Con un elemento elegido, el resto se aclara y se vuelve transparente, para que el elegido se vea aunque quede
+    // detrás de losas o columnas; sus bordes quedan tenues para seguir leyendo la forma del edificio.
     const aclarado = !!seleccion && seleccion !== e.id;
     const fantasma = modo === 'instalacion' && (aclarado || inst);
     mat.opacity = modo === 'instalacion' ? (VIGAS_CRUZADAS.has(e.id) ? 0.45 : e.t === 'losa' ? 0.28 : 0.08) : (modo === 'avance' && !hecho(e.id) ? 0.15 : 1);
     mat.transparent = mat.opacity < 1; mat.depthWrite = modo !== 'instalacion' && mat.opacity === 1;
-    if (aclarado && modo !== 'instalacion') { mat.color.lerp(BLANCO, 0.5); mat.emissive.set(0x6e6e6e); }
+    if (aclarado && modo !== 'instalacion') { mat.color.lerp(BLANCO, 0.4); mat.emissive.set(0x4a4a4a); mat.opacity = Math.min(mat.opacity, TRANSP_FOCO); mat.transparent = true; mat.depthWrite = false; }
     else mat.emissive.set(e.id === hover ? 0x2a2a2a : (e.id === seleccion ? 0x1c2a40 : 0x000000));
     m.children[0].visible = !fantasma || inst;
+    m.children[0].material = aclarado && modo !== 'instalacion' ? bordeTenue : bordeMat;
   }
   pintarSan();
   pintarMuros();
@@ -876,13 +888,22 @@ lienzo.addEventListener('pointerup', ev => {
   if (!abajo || Math.hypot(ev.clientX - abajo[0], ev.clientY - abajo[1]) > 5) return;
   elegir(tocar(ev));
 });
+// Lleva la cámara al elemento: mantiene la dirección desde la que se mira y se acerca hasta que la pieza entra
+// con aire en la parte libre de la vista (sin la columna de niveles), sea una columna o una losa entera.
+function encuadrarElemento(id) {
+  const obj = porId[id] ? porId[id].malla : SANP[id] && SANP[id].m; if (!obj) return;
+  const B = new THREE.Box3().setFromObject(obj); if (B.isEmpty()) return;
+  const c = B.getCenter(new THREE.Vector3()), s = B.getSize(new THREE.Vector3());
+  const dir = camara.position.clone().sub(ctrl.target).normalize(), der = new THREE.Vector3().setFromMatrixColumn(camara.matrixWorld, 0);
+  const ancho = Math.abs(der.x) * s.x + Math.abs(der.y) * s.y + Math.abs(der.z) * s.z;
+  const arriba = new THREE.Vector3().setFromMatrixColumn(camara.matrixWorld, 1), alto = Math.abs(arriba.x) * s.x + Math.abs(arriba.y) * s.y + Math.abs(arriba.z) * s.z;
+  const d = Math.max(3, distPara(ancho * 1.8, alto * 1.8)), tgt = c.clone().add(corrLibre(d, der));
+  volarA(tgt.clone().addScaledVector(dir, d), tgt);
+}
 function elegir(id, enfocar = false) {
   if (typeof enEdicion !== 'undefined' && enEdicion && enEdicion !== id) enEdicion = null;
   seleccion = id;
-  if (id && enfocar) {
-    const c = porId[id] ? porId[id].centro : centroSan(id); const off = camara.position.clone().sub(ctrl.target).setLength(Math.max(6, Math.min(14, camara.position.distanceTo(ctrl.target))));
-    volarA(c.clone().add(off), c.clone());
-  }
+  if (id && enfocar) encuadrarElemento(id);
   pintar(); refrescarResumen(); marcarFilaSel();
   if (id && porId[id] && pestana !== 'resumen' && pestana !== 'elementos') abrir('resumen');
   if (pestana === 'sanitaria') refrescarSanitaria();
@@ -914,16 +935,18 @@ function abrir(k) {
 // Todo cómputo (indicadores de arriba, Estructura H°A, Albañilería, Sanitaria y Avance) suma solo lo que está a la
 // vista en el modelo: si se apaga una capa o se aísla un nivel, lo oculto deja de sumar. La lista de Elementos
 // sigue mostrando todo, para poder tildar lo hecho aunque esté oculto.
-const cuentaEl = e => !!tiposOn[e.t] && visibleNivel(e.l) && fEl(e) > 0;
-const cuentaMuro = m => albOn.muros && capaOn(m.tipo) && visibleNivel(PISO_MURO[m.piso]) && fMuro(m) > 0;
-const cuentaSan = s => (s.k === 'tramo' ? sanOn[s.o.sis] : s.k === 'artefacto' ? sanOn.artefactos : true) && visibleNivel(s.nivel) && fSan(s) > 0;
+const cuentaEl = e => !!tiposOn[e.t] && !ocultos.has(e.id) && visibleNivel(e.l) && fEl(e) > 0;
+const cuentaMuro = m => albOn.muros && !ocultos.has('muro:' + m.id) && capaOn(m.tipo) && visibleNivel(PISO_MURO[m.piso]) && fMuro(m) > 0;
+let _idSan = null;
+const idDeSan = s => (_idSan ||= new Map(Object.entries(SANP).map(([id, x]) => [x, id]))).get(s);
+const cuentaSan = s => !ocultos.has(idDeSan(s)) && (s.k === 'tramo' ? sanOn[s.o.sis] : s.k === 'artefacto' ? sanOn.artefactos : true) && visibleNivel(s.nivel) && fSan(s) > 0;
 function seCuenta(id) {
   if (porId[id]) return cuentaEl(porId[id]);
   if (id.startsWith('muro:')) { const m = muroPorId[id.slice(5)]; return !!m && cuentaMuro(m); }
   return SANP[id] ? cuentaSan(SANP[id]) : true;
 }
 // Hay algo oculto: se avisa en los totales para que no se lean como los de toda la obra.
-const hayOculto = () => !!corte || nivelSel != null || TIPOS.some(([k]) => EL.some(e => e.t === k) && !tiposOn[k]) || !albOn.muros || Object.values(capaEstado).some(c => !c.on);
+const hayOculto = () => ocultos.size > 0 || !!corte || nivelSel != null || TIPOS.some(([k]) => EL.some(e => e.t === k) && !tiposOn[k]) || !albOn.muros || Object.values(capaEstado).some(c => !c.on);
 const marcaVisible = () => hayOculto() ? ' <span class="solo-visible" title="Suma solo lo que está a la vista en el modelo">· solo lo visible</span>' : '';
 
 // ---------- Indicadores ----------
@@ -1282,7 +1305,7 @@ function pintarMuros() {
   const inst = modo === 'instalacion';
   for (const mesh of MUROS) {
     const s = SANP[mesh.userData.id];
-    mesh.visible = capaOn(s.o.tipo) && visibleNivel(s.nivel);
+    mesh.visible = capaOn(s.o.tipo) && visibleNivel(s.nivel) && !ocultos.has(mesh.userData.id);
     const sel = seleccion === mesh.userData.id, hov = hover === mesh.userData.id;
     mesh.material = mM(s.o.tipo);
     vestir(mesh.material, s.o.tipo, !inst); mesh.material.opacity = inst ? 0.12 : 1; mesh.material.depthWrite = !inst;
@@ -1648,14 +1671,14 @@ function restablecerMuro(id) {
   recalcularMuro(m); rehacerMuro(m); ponerFlechas(); refrescarKpis(); if (pestana === 'albanileria') refrescarAlbanileria(); refrescarResumen();
 }
 
-// ---------- Foco: con un elemento elegido, todo lo demás se aclara (también lo de su misma capa) ----------
+// ---------- Foco: con un elemento elegido, todo lo demás se aclara y queda transparente (también lo de su misma capa) ----------
 const _tenue = new Map(), _resalte = new Map();
 const matBordeSel = new THREE.LineBasicMaterial({ color: css('--accent'), transparent: true, opacity: 0.9 });
 function tenue(mat) {
   let f = _tenue.get(mat); if (!f) { f = mat.clone(); _tenue.set(mat, f); }
   f.map = mat.map; if (f.color && mat.color) f.color.copy(mat.color).lerp(BLANCO, 0.5);
   if (f.emissive) f.emissive.set(0x6e6e6e);                  // levanta los oscuros: textura con menos contraste
-  f.transparent = mat.transparent; f.opacity = mat.opacity; f.depthWrite = mat.depthWrite; return f;
+  f.transparent = true; f.opacity = Math.min(mat.opacity, TRANSP_FOCO); f.depthWrite = false; return f;
 }
 function resaltado(mat) {
   let f = _resalte.get(mat); if (!f) { f = mat.clone(); _resalte.set(mat, f); }
@@ -1816,7 +1839,8 @@ function registrar(acc) { historial.push(acc); if (historial.length > 200) histo
 function avisoBreve(t) { const a = $('#avisoAccion'); a.textContent = t; a.hidden = false; clearTimeout(avisoBreve.t); avisoBreve.t = setTimeout(() => a.hidden = true, 1800); }
 const activo = id => !!porId[id] && EL.includes(porId[id]);
 const descActivos = e => (e.desc || []).filter(d => d.con === e.id || activo(d.con));
-function recalcularNetos() { for (const e of EL) { const vb = e.volBruto ?? e.vol; e.vol = Math.round((vb - descActivos(e).reduce((s, d) => s + d.vol, 0)) * 1000) / 1000; } }
+// Nunca por debajo de cero: una pieza que queda entera adentro de otra no descuenta más de lo que tiene (igual que en superposiciones.js)
+function recalcularNetos() { for (const e of EL) { const vb = e.volBruto ?? e.vol; e.vol = Math.max(0, Math.round((vb - descActivos(e).reduce((s, d) => s + d.vol, 0)) * 1000) / 1000); } }
 function refrescarTodo() {
   recalcularNetos();
   pintar(); refrescarKpis(); refrescarElementos(); refrescarAvance(); refrescarComputo(); refrescarResumen();
@@ -2229,7 +2253,7 @@ function pintarSan() {
     else on = s.k === 'cruce' ? sanOn.cruces : sanOn.pases;
     let nivel = s.nivel;
     if (s.k === 'union') { const pis = SAN.pisos.slice().reverse().find(p => s.o.p[2] >= p.z - 0.6); nivel = pis ? PISO_NIVEL[pis.id] : 'base'; }
-    s.m.visible = on && visibleNivel(nivel);
+    s.m.visible = on && visibleNivel(nivel) && !ocultos.has(id);
     if (s.k === 'tramo') s.ppal.material = mS(s.o.sis);
   }
 }
@@ -2436,9 +2460,21 @@ function marcarHecho(ids, valor) {
   guardar('hechos', hechos);
   pintar(); refrescarKpis(); refrescarAvance(); refrescarElementos(); if (seleccion) { refrescarResumen(); if (pestana === 'albanileria') refrescarAlbanileria(); if (pestana === 'sanitaria') refrescarSanitaria(); }
 }
+// Prender o apagar elementos (ojo de la lista y de la ficha). Lo apagado no se ve en el modelo ni suma en los cómputos.
+const OJO = on => on
+  ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>'
+  : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a9.6 9.6 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+function ponerOcultos(ids, ocultar) {
+  ids.forEach(id => ocultar ? ocultos.add(id) : ocultos.delete(id));
+  guardar('ocultos', [...ocultos]);
+  if (ocultar && seleccion && ocultos.has(seleccion)) elegir(null);
+  pintar(); refrescarKpis(); refrescarComputo(); refrescarElementos(); refrescarResumen();
+  if (pestana === 'albanileria') refrescarAlbanileria(); if (pestana === 'sanitaria') refrescarSanitaria();
+}
+document.addEventListener('click', ev => { const b = ev.target.closest('[data-ojo]'); if (!b) return; ev.stopPropagation(); ev.preventDefault(); ponerOcultos([b.dataset.ojo], !ocultos.has(b.dataset.ojo)); });
 // Tilde de "hecho" en cualquier ficha o lista
 document.addEventListener('change', ev => { const c = ev.target.closest('[data-hecho]'); if (c) marcarHecho([c.dataset.hecho], c.checked); });
-const casillaHecho = id => `<div style="display:flex;gap:8px;flex-wrap:wrap"><label class="hecho"><input type="checkbox" data-hecho="${id}"${hecho(id) ? ' checked' : ''}> Hecho</label><button type="button" class="btn" data-eliminar="${id}" title="Tecla Supr · Ctrl+Z deshace">Eliminar</button></div>`;
+const casillaHecho = id => `<div style="display:flex;gap:8px;flex-wrap:wrap"><label class="hecho"><input type="checkbox" data-hecho="${id}"${hecho(id) ? ' checked' : ''}> Hecho</label><button type="button" class="btn" data-ojo="${id}" title="Apagarlo en el modelo: deja de verse y de sumar en los cómputos">Ocultar</button><button type="button" class="btn" data-eliminar="${id}" title="Tecla Supr · Ctrl+Z deshace">Eliminar</button></div>`;
 
 // Pestaña Elementos: rubro > nivel > elementos
 let filtroTexto = '', soloPendientes = false;
@@ -2450,6 +2486,7 @@ function armarElementos() {
   $('#p-elementos').innerHTML = `<section>
     <div class="fila-ctl"><input id="buscar" class="campo" style="flex:1" type="search" placeholder="Buscar: C04, V-115, M-P1-05, Ø110…" aria-label="Buscar elemento">
       <label><input type="checkbox" id="soloPend"> Solo lo pendiente</label></div>
+    <div id="avisoOcultos" class="fila-ctl" style="margin-top:8px" hidden></div>
     <div id="listaObra" style="margin-top:10px;display:grid;gap:8px"></div></section>`;
   $('#buscar').oninput = ev => { filtroTexto = ev.target.value; refrescarElementos(); };
   $('#soloPend').onchange = ev => { soloPendientes = ev.target.checked; refrescarElementos(); };
@@ -2468,9 +2505,9 @@ function refrescarElementos() {
       const N = L.filter(i => i.nivel === n.id); if (!N.length) continue;
       const todosH = N.every(i => hecho(i.id)), algunos = N.some(i => hecho(i.id)), sub = N.reduce((a, i) => a + i.cant, 0);
       const clave = r + '|' + n.id, nivAbierto = q || nivAbiertos.has(clave) || N.some(i => i.id === seleccion);
-      h += `<details class="nivel-el" data-niv="${clave}"${nivAbierto ? ' open' : ''}><summary class="nivel-cab"><span class="izq"><svg class="flecha" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5l4.5 4.5L6 12.5"/></svg><label><input type="checkbox" data-todo="${clave}"${todosH ? ' checked' : ''}${!todosH && algunos ? ' data-mixto' : ''} aria-label="Marcar todo ${esc(n.corto)} como hecho"> ${esc(n.corto)}</label></span><span class="num">${N.length} · ${fmt(sub, un === 'm³' ? 2 : 1)} ${un}</span></summary>
-        <table class="obra"><tbody>${N.map(i => `<tr class="clic${i.id === seleccion ? ' sel' : ''}" data-id="${i.id}"><td style="width:22px"><input type="checkbox" data-hecho="${i.id}"${hecho(i.id) ? ' checked' : ''} aria-label="${esc(i.nombre)} hecho"></td>
-          <td><span class="sw" style="display:inline-block;vertical-align:-1px;margin-right:6px;background:${i.color}"></span>${esc(i.nombre)}</td><td class="sec">${esc(i.tipo)}${i.det ? ' · ' + esc(i.det) : ''}</td><td class="r num">${i.cant ? fmt(i.cant, un === 'm³' ? 3 : 2) : ''}</td></tr>`).join('')}</tbody></table></details>`;
+      h += `<details class="nivel-el" data-niv="${clave}"${nivAbierto ? ' open' : ''}><summary class="nivel-cab"><span class="izq"><svg class="flecha" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5l4.5 4.5L6 12.5"/></svg><label><input type="checkbox" data-todo="${clave}"${todosH ? ' checked' : ''}${!todosH && algunos ? ' data-mixto' : ''} aria-label="Marcar todo ${esc(n.corto)} como hecho"> ${esc(n.corto)}</label></span><span class="der"><span class="num">${N.length} · ${fmt(sub, un === 'm³' ? 2 : 1)} ${un}</span><button type="button" class="ojo" data-ojo-grupo="${clave}" aria-pressed="${!N.every(i => ocultos.has(i.id))}" title="${N.every(i => ocultos.has(i.id)) ? 'Mostrar' : 'Ocultar'} todo ${esc(n.corto)}" aria-label="${N.every(i => ocultos.has(i.id)) ? 'Mostrar' : 'Ocultar'} todo ${esc(n.corto)}">${OJO(!N.every(i => ocultos.has(i.id)))}</button></span></summary>
+        <table class="obra"><tbody>${N.map(i => `<tr class="clic${i.id === seleccion ? ' sel' : ''}${ocultos.has(i.id) ? ' apagado' : ''}" data-id="${i.id}"><td style="width:22px"><input type="checkbox" data-hecho="${i.id}"${hecho(i.id) ? ' checked' : ''} aria-label="${esc(i.nombre)} hecho"></td>
+          <td><span class="sw" style="display:inline-block;vertical-align:-1px;margin-right:6px;background:${i.color}"></span>${esc(i.nombre)}</td><td class="sec">${esc(i.tipo)}${i.det ? ' · ' + esc(i.det) : ''}</td><td class="r num">${i.cant ? fmt(i.cant, un === 'm³' ? 3 : 2) : ''}</td><td style="width:28px"><button type="button" class="ojo" data-ojo="${i.id}" aria-pressed="${!ocultos.has(i.id)}" title="${ocultos.has(i.id) ? 'Mostrar' : 'Ocultar'} en el modelo" aria-label="${ocultos.has(i.id) ? 'Mostrar' : 'Ocultar'} ${esc(i.nombre)}">${OJO(!ocultos.has(i.id))}</button></td></tr>`).join('')}</tbody></table></details>`;
     }
     if (!L.length) h += `<p class="nota" style="padding:4px 8px">Nada para mostrar con este filtro.</p>`;
     h += `</details>`;
@@ -2482,7 +2519,10 @@ function refrescarElementos() {
   cont.querySelectorAll('details.nivel-el').forEach(d => d.ontoggle = () => { if (d.open) nivAbiertos.add(d.dataset.niv); else nivAbiertos.delete(d.dataset.niv); });
   cont.querySelectorAll('details.rubro').forEach(d => d.ontoggle = () => { if (d.open) abiertos.add(d.dataset.rubro); else abiertos.delete(d.dataset.rubro); });
   cont.querySelectorAll('[data-todo]').forEach(c => c.onchange = () => { const [r, n] = c.dataset.todo.split('|'); marcarHecho(l.filter(i => i.rubro === r && i.nivel === n).map(i => i.id), c.checked); });
-  cont.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = ev => { if (ev.target.closest('input')) return; const id = tr.dataset.id; if (SANP[id] && !SANP[id].m.visible && nivelSel) elegirNivel(null); elegir(id, true); });
+  cont.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = ev => { if (ev.target.closest('input, button')) return; const id = tr.dataset.id; if (ocultos.has(id)) ponerOcultos([id], false); const e = porId[id]; if (nivelSel && ((SANP[id] && !SANP[id].m.visible) || (e && !visibleNivel(e.l)))) elegirNivel(null); elegir(id, true); });
+  cont.querySelectorAll('[data-ojo-grupo]').forEach(b => b.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); const [r, n] = b.dataset.ojoGrupo.split('|'), ids = todos.filter(i => i.rubro === r && i.nivel === n).map(i => i.id); ponerOcultos(ids, !ids.every(id => ocultos.has(id))); });
+  const av = $('#avisoOcultos'); av.hidden = !ocultos.size;
+  if (ocultos.size) { av.innerHTML = `<span>${ocultos.size} ${ocultos.size === 1 ? 'elemento apagado' : 'elementos apagados'}: no se ven ni suman en los cómputos</span><button type="button" class="btn" id="mostrarOcultos">Mostrar todos</button>`; $('#mostrarOcultos').onclick = () => ponerOcultos([...ocultos], false); }
   $('#t-elementos .cuenta').textContent = todos.length;
 }
 function marcarFilaSel() { document.querySelectorAll('#listaObra tr[data-id]').forEach(tr => { const si = tr.dataset.id === seleccion; tr.classList.toggle('sel', si); if (si) { const d = tr.closest('details.nivel-el'); if (d && !d.open) d.open = true; } }); }
