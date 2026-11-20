@@ -81,5 +81,21 @@
         "proceso": "skp"
       }
     ]
+  },
+  {
+    "id": "condarco",
+    "clave": "cdc3187",
+    "nombre": "Condarco 3187",
+    "descripcion": "Estructura de H°A · subsuelo + PB + 10 pisos + sala de máquinas",
+    "datos": "cdc/tablero-datos.json",
+    "archivos": [
+      {
+        "rol": "Modelo de estructura",
+        "ruta": "03_ANTEPROYECTO/03_MODELOS 3D BORRADOR/MODELADO ESTRUCTURAL/CDC_MODELADO ESTRUCTURAL.skp",
+        "cargado": "2026-11-20T16:03:48.217Z",
+        "tam": 1267608,
+        "proceso": "skp"
+      }
+    ]
   }
 ]

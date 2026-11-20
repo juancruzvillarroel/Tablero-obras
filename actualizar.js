@@ -38,6 +38,13 @@ const OBRAS = {
     },
     cadena: [['lib', 'extraer.js']],
     salidas: ['lib/skp.json', 'lib/tablero-datos.json', 'lib/modelo.skp'],
+  },  // Condarco 3187: por ahora solo el SketchUp de estructura.
+  condarco: {
+    procesos: {
+      skp: { tipo: 'skp', carpeta: 'cdc', copia: 'cdc/modelo.skp' },
+    },
+    cadena: [['cdc', 'extraer.js']],
+    salidas: ['cdc/skp.json', 'cdc/tablero-datos.json', 'cdc/modelo.skp'],
   },
 };
 

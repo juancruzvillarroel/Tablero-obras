@@ -91,7 +91,9 @@ for (let i = 0; i < E.length; i++) for (let j = i + 1; j < E.length; j++) {
 }
 for (const e of D.elementos) {
   const d = desc.get(e.id); if (!d) { e.vol = e.volBruto; continue; }
-  e.desc = d; e.vol = Math.round((e.volBruto - d.reduce((s, x) => s + x.vol, 0)) * 1000) / 1000;
+  // Una pieza que queda entera adentro de otra (un muro del subsuelo de Condarco dibujado dentro de su base) no puede
+  // descontar más que lo que tiene: el redondeo de las mallas daba unos litros de más y el volumen salía negativo.
+  e.desc = d; e.vol = Math.max(0, Math.round((e.volBruto - d.reduce((s, x) => s + x.vol, 0)) * 1000) / 1000);
 }
 fs.writeFileSync(archivo, JSON.stringify(D));
 const bruto = D.elementos.reduce((s, e) => s + e.volBruto, 0), neto = D.elementos.reduce((s, e) => s + e.vol, 0);
