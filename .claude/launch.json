@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tablero",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["servidor-tablero.js"],
+      "port": 5180
+    }
+  ]
+}
