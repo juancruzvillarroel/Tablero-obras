@@ -86,12 +86,6 @@
         "cargado": "2026-11-20T17:34:30.408Z",
         "tam": 746546,
         "proceso": "alb"
-      },
-      {
-        "rol": "Prueba de subida",
-        "ruta": "TABLERO/PRUEBA_TABLERO.pdf",
-        "pendiente": true,
-        "cargado": "2026-11-25T11:55:16.690Z"
       }
     ],
     "alb": "lib/alb/albanileria.json"
