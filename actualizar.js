@@ -51,13 +51,15 @@ const OBRAS = {
     },
     cadena: [['lib', 'extraer.js'], ['lib/alb', 'armar-muros.js']],
     salidas: ['lib/skp.json', 'lib/tablero-datos.json', 'lib/modelo.skp', 'lib/alb/muros.dwg', 'lib/alb/muros.dxf', 'lib/alb/muros.json', 'lib/alb/albanileria.json'],
-  },  // Condarco 3187: por ahora solo el SketchUp de estructura.
+  },  // Condarco 3187: SketchUp de estructura y CAD de instalación sanitaria cloacal (cdc/san/armar.js la alinea con
+  // el modelo y la arma en 3D).
   condarco: {
     procesos: {
       skp: { tipo: 'skp', carpeta: 'cdc', copia: 'cdc/modelo.skp' },
+      san: { tipo: 'dwg', copia: 'cdc/san/ins.dwg', dxf: 'cdc/san/ins.dxf', leer: [['cdc/san', '../../san/parse.js', 'ins.dxf']], hecho: ['cdc/san/dxf.json'] },
     },
-    cadena: [['cdc', 'extraer.js']],
-    salidas: ['cdc/skp.json', 'cdc/tablero-datos.json', 'cdc/modelo.skp'],
+    cadena: [['cdc', 'extraer.js'], ['cdc/san', 'armar.js']],
+    salidas: ['cdc/skp.json', 'cdc/tablero-datos.json', 'cdc/modelo.skp', 'cdc/san/dxf.json', 'cdc/san/sanitaria.json'],
   },
 };
 
@@ -200,7 +202,7 @@ async function actualizar(id, indice, avisar = () => {}) {
 // lo carga (y reemplaza al anterior de ese tipo); si no, queda en la lista como pendiente de procesar.
 const ROLES = id => ({ skp: 'Modelo de estructura', es: id === 'habana' ? 'Plano de estructura y pases en losa' : 'Plano de estructura del ingeniero', san: 'Instalación sanitaria', alb: 'Albañilería' });
 // Qué dato de la obra sale de cada archivo (se apaga al quitarlo y se vuelve a prender al agregarlo)
-const DATOS = { argerich: { san: ['san', 'san/sanitaria.json'], alb: ['alb', 'alb/albanileria.json'] }, habana: { es: ['san', 'hab/sanitaria.json'] }, libertador: { alb: ['alb', 'lib/alb/albanileria.json'] } };
+const DATOS = { argerich: { san: ['san', 'san/sanitaria.json'], alb: ['alb', 'alb/albanileria.json'] }, habana: { es: ['san', 'hab/sanitaria.json'] }, libertador: { alb: ['alb', 'lib/alb/albanileria.json'] }, condarco: { san: ['san', 'cdc/san/sanitaria.json'] } };
 function motivoNoQuitar(id, a) {
   if (a.pendiente) return null;
   if (a.proceso === 'skp') return 'Es el modelo base de la obra. Para cambiarlo, agregá otro SketchUp como "Modelo de estructura" y reemplaza a este.';

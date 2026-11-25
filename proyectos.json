@@ -96,6 +96,7 @@
     "nombre": "Condarco 3187",
     "descripcion": "Estructura de H°A · subsuelo + PB + 10 pisos + sala de máquinas",
     "datos": "cdc/tablero-datos.json",
+    "san": "cdc/san/sanitaria.json",
     "archivos": [
       {
         "rol": "Modelo de estructura",
@@ -105,10 +106,11 @@
         "proceso": "skp"
       },
       {
-        "rol": "Otro archivo",
+        "rol": "Instalación sanitaria",
         "ruta": "TABLERO/CDC_IS_CL.dwg",
-        "pendiente": true,
-        "cargado": "2026-11-25T14:01:06.890Z"
+        "proceso": "san",
+        "cargado": "2026-11-25T14:31:58.221Z",
+        "tam": 327205
       }
     ]
   }

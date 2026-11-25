@@ -1208,7 +1208,8 @@ function refrescarComputo() {
 // aproximada, más gruesas que el caño, con su campana (enchufe) en cada boca.
 const SIS_ORDEN = ['primaria', 'secundaria', 'pluvial', 'ventilacion', 'extraccion', 'aire'];
 // Cada piso va con su nivel del corte: el 1° piso con las columnas del 1° y la losa sobre el 1° (S/1°).
-const PISO_NIVEL = { PB: 'sPB', P1: 's1', P2: 's2', P3: 's3', P4: 's4', P5: 's5' };
+// Losa con la que se muestra cada piso de la instalación: la trae la obra (Condarco) o, si no, la de Argerich y Habana
+const PISO_NIVEL = SAN.pisos.some(p => p.nivel) ? Object.fromEntries(SAN.pisos.map(p => [p.id, p.nivel])) : { PB: 'sPB', P1: 's1', P2: 's2', P3: 's3', P4: 's4', P5: 's5' };
 const NOM_PISO = Object.fromEntries(SAN.pisos.map(p => [p.id, p.nombre]));
 const NOM_MODO = {
   cielorraso: 'colgado bajo losa', bajo_viga: 'por debajo de la viga', contrapiso: 'por contrapiso', pared: 'por pared',
