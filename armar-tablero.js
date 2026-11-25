@@ -17,8 +17,11 @@ function archivo(p, a) {
   out.modificado = st.mtime.toISOString();
   // Agregado desde el menú pero sin un proceso que lo lea todavía: figura en la lista, sin datos en el modelo
   if (a.pendiente) { out.estado = 'pendiente'; return out; }
-  const mismo = a.tam != null && st.size === a.tam, despues = st.mtime > new Date(new Date(a.cargado).getTime() + 2 * 60e3);
-  out.estado = despues && !mismo ? 'cambio' : 'al dia';
+  // Cambió si se guardó después de la versión que se cargó. Se compara con la fecha de modificación que tenía el
+  // archivo al cargarlo (a.mtime): cualquier guardado posterior cuenta, aunque sea enseguida o sin cambiar de tamaño.
+  // Los cargados antes de guardar esa fecha se comparan con el momento de la carga (con un minuto de margen).
+  const ref = a.mtime ? Date.parse(a.mtime) + 1000 : Date.parse(a.cargado) + 60e3;
+  out.estado = st.mtime.getTime() > ref ? 'cambio' : 'al dia';
   return out;
 }
 function estadoArchivos(p) { return (p.archivos || []).map((a, i) => ({ ...archivo(p, a), indice: i })); }

@@ -173,13 +173,14 @@ async function actualizar(id, indice, avisar = () => {}) {
       const op = j !== indice && !otro.pendiente && otro.proceso && obra.procesos[otro.proceso];
       if (!op || convertido(op).every(f => fs.existsSync(path.join(RAIZ, f)))) continue;
       avisar('En esta compu falta convertir ' + path.basename(otro.ruta) + ': lo convierto primero');
-      const so = await convertir(P, otro, op, avisar); otro.cargado = new Date().toISOString(); otro.tam = so.size;
+      const so = await convertir(P, otro, op, avisar); otro.cargado = new Date().toISOString(); otro.tam = so.size; otro.mtime = so.mtime.toISOString();
     }
 
     for (const [dir, script] of obra.cadena) { avisar('Rearmando: ' + dir + '/' + script); await nodo(dir, script); }
 
     // queda registrado qué versión se cargó
-    a.cargado = new Date().toISOString(); a.tam = st.size;
+    // la fecha de modificación del archivo que se cargó: cualquier guardado posterior cuenta como cambio
+    a.cargado = new Date().toISOString(); a.tam = st.size; a.mtime = st.mtime.toISOString();
     escribirObras(lista);
     avisar('Armando el tablero y probándolo');
     await nodo('.', 'armar-tablero.js');

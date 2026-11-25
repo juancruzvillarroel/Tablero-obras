@@ -98,6 +98,9 @@ header.obra { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: 
 .arch-act:hover { background: #e6e6e6; }
 .arch-act:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .arch-act[disabled] { opacity: .35; cursor: default; }
+.arch-act.secundario { background: transparent; color: #e6e6e6; box-shadow: inset 0 0 0 1px #444; }
+.arch-act.secundario:hover { background: #1a1a1a; }
+.arch-act[aria-disabled="true"] { opacity: .45; }
 .arch-prog { flex-basis: 100%; font-size: 12px; color: #d0d0d0; line-height: 1.5; display: flex; align-items: flex-start; gap: 8px; }
 .arch-prog.ok { color: #9be39b; display: block; }
 .arch-prog.mal { color: #ff8a80; display: block; }
@@ -506,7 +509,12 @@ $('#proyNombre').textContent = PROY.nombre; document.title = 'Modelo ' + PROY.no
       const esto = mio() && trabajo.tipo !== 'agregar' && trabajo.indice === i;
       let accion = '';
       if (esto && !trabajo.fin) accion = progreso(); else if (esto) accion = final();
-      if (local && !(esto && (!trabajo.fin || trabajo.ok)) && a.estado !== 'falta' && a.estado !== 'pendiente') accion += `<button type="button" class="arch-act" data-actualizar="${i}"${enCurso ? ' disabled' : ''}>${a.estado === 'cambio' ? 'Actualizar' : 'Volver a cargar'}</button>`;
+      // Actualizar siempre a mano: resaltado si se detectó un cambio; si no, igual se puede forzar (por ejemplo, si
+      // OneDrive todavía no terminó de sincronizar la fecha del archivo)
+      if (!(esto && (!trabajo.fin || trabajo.ok)) && a.estado !== 'falta' && a.estado !== 'pendiente') {
+        const titulo = !local ? 'Para actualizar hace falta el tablero andando en tu compu' : a.estado === 'cambio' ? 'Cargar la versión nueva del archivo' : 'Volver a cargar el archivo aunque no se haya detectado un cambio';
+        accion += `<button type="button" class="arch-act${a.estado === 'cambio' ? '' : ' secundario'}" data-actualizar="${i}"${enCurso ? ' disabled' : ''}${!local ? ' aria-disabled="true"' : ''} title="${esc(titulo)}">Actualizar</button>`;
+      }
       const motivo = !local ? 'Para quitar archivos hace falta el tablero andando en tu compu' : a.noQuitar || 'Quitarlo del tablero (el archivo en OneDrive no se borra)';
       const tacho = `<button type="button" class="arch-tacho" data-quitar="${i}"${!local || enCurso || a.noQuitar ? ' aria-disabled="true"' : ''} title="${esc(motivo)}" aria-label="Quitar ${esc(a.nombre)}">${TACHO}</button>`;
       return `<div class="arch-item"><span class="arch-tit"><span class="rol">${esc(a.rol)}</span>${tacho}</span><span class="nom">${esc(a.nombre)}</span><span class="carp">${esc(a.carpeta)}${a.leido ? ' · leído desde ' + esc(a.leido) : ''}</span>
@@ -516,7 +524,7 @@ $('#proyNombre').textContent = PROY.nombre; document.title = 'Modelo ' + PROY.no
       panelAgregar() + (!local && !agregando && sinServidor && EN_LA_COMPU ? sinTablero() : '') +
       `<p class="arch-pie">${local ? `Fechas revisadas recién en ${EN_LA_COMPU ? 'esta compu' : 'tu compu (' + esc(info.compu || '') + ')'}. Subir, actualizar y quitar guardan un respaldo: si algo falla, queda todo como estaba. Quitar saca el archivo del tablero; el archivo en OneDrive no se borra.` : `Fechas revisadas al armar el tablero${ARMADO ? ', el ' + fecha(ARMADO) : ''}.`}</p>`;
     $('#archAlerta').hidden = !A.some(a => a.estado === 'cambio' || a.estado === 'falta');
-    m.querySelectorAll('[data-actualizar]').forEach(x => x.onclick = () => pedir('/api/actualizar', { indice: +x.dataset.actualizar }));
+    m.querySelectorAll('[data-actualizar]').forEach(x => x.onclick = () => { if (x.getAttribute('aria-disabled') === 'true') { agregando = { q: '', lista: null, sel: null }; pintarMenu(); return; } pedir('/api/actualizar', { indice: +x.dataset.actualizar }); });
     m.querySelectorAll('[data-quitar]').forEach(x => x.onclick = () => {
       if (x.getAttribute('aria-disabled') === 'true') { if (!local) { agregando = { q: '', lista: null, sel: null }; pintarMenu(); } else alert(x.title); return; }
       quitarArchivo(+x.dataset.quitar);
