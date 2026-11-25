@@ -103,6 +103,12 @@
         "cargado": "2026-11-20T16:03:48.217Z",
         "tam": 1267608,
         "proceso": "skp"
+      },
+      {
+        "rol": "Otro archivo",
+        "ruta": "TABLERO/CDC_IS_CL.dwg",
+        "pendiente": true,
+        "cargado": "2026-11-25T14:01:06.890Z"
       }
     ]
   }
