@@ -6,11 +6,22 @@
 // AutoCAD (accoreconsole) y se leen con dxf-parser; 3) corre la cadena de la obra (extracción, superposiciones,
 // instalación, muros); 4) arma el tablero y lo prueba (smoke.js). Antes de empezar guarda un respaldo de todo
 // lo que se va a pisar: si algún paso falla, vuelve todo como estaba y el tablero queda con la versión anterior.
-const fs = require('fs'), path = require('path'), { execFile } = require('child_process');
+const fs = require('fs'), path = require('path'), os = require('os'), { execFile } = require('child_process');
 const RAIZ = __dirname;
 const { leerObras, escribirObras } = require('./obras.js');
-const SKETCHUP = 'C:/Program Files/SketchUp/SketchUp 2023/SketchUp.exe';
-const ACCORE = 'C:/Program Files/Autodesk/AutoCAD 2024/accoreconsole.exe';
+// SketchUp y AutoCAD: en cada compu se usa la versión más nueva instalada (los compañeros pueden tener otras que
+// las de esta compu). Se pueden forzar con las variables TABLERO_SKETCHUP y TABLERO_ACCORE.
+function programa(env, base, patron, exe) {
+  if (process.env[env] && fs.existsSync(process.env[env])) return process.env[env];
+  for (const raiz of [process.env.ProgramFiles || 'C:/Program Files', 'C:/Program Files']) {
+    let dirs = []; try { dirs = fs.readdirSync(path.join(raiz, base)).filter(d => patron.test(d)); } catch (e) { continue; }
+    dirs.sort((a, b) => (+(b.match(/\d{4}/) || [0])[0]) - (+(a.match(/\d{4}/) || [0])[0]));
+    for (const d of dirs) { const f = path.join(raiz, base, d, exe); if (fs.existsSync(f)) return f; }
+  }
+  return null;
+}
+const SKETCHUP = programa('TABLERO_SKETCHUP', 'SketchUp', /^SketchUp \d{4}$/, 'SketchUp.exe');
+const ACCORE = programa('TABLERO_ACCORE', 'Autodesk', /^AutoCAD( LT)? \d{4}$/, 'accoreconsole.exe');
 
 // Cómo se convierte cada archivo (según su "proceso" en proyectos.json) y qué cadena se corre después.
 const OBRAS = {
@@ -58,14 +69,31 @@ const nodo = (dir, script, ...args) => correr(process.execPath, [script, ...args
 // Publicar: si la carpeta tiene un repositorio con GitHub configurado, después de cada cambio se suben los datos y
 // la página nueva (docs/index.html, que GitHub Pages publica sola en un minuto). Si no se puede subir, el cambio
 // queda hecho igual en la compu y se avisa por qué no se subió.
+// Varias compus publican al mismo repositorio (la de cada compañero que sube archivos): antes de cambiar algo se trae
+// lo último (sincronizar) y, si al subir otra compu ya publicó algo en el medio, se trae eso y se vuelve a intentar.
+// Si los cambios se pisan (dos personas cargando la misma obra a la vez), no se fuerza nada: se avisa.
+// TABLERO_SIN_PUBLICAR=1: no trae ni publica nada (para probar sin tocar GitHub)
+const hayGitHub = async () => { if (process.env.TABLERO_SIN_PUBLICAR) return false; try { return !!(await correr('git', ['remote'], RAIZ)).trim(); } catch (e) { return false; } };
+async function sincronizar(avisar = () => {}) {
+  if (!(await hayGitHub())) return;
+  avisar('Trayendo lo último que publicaron los demás');
+  try { await correr('git', ['pull', '--rebase', '--autostash'], RAIZ, 180000); }
+  catch (e) { try { await correr('git', ['rebase', '--abort'], RAIZ); } catch (x) { /* no había rebase */ } throw new Error('No se pudo traer lo último de GitHub (' + e.message + '). Revisá la conexión e intentá de nuevo'); }
+}
 async function publicar(mensaje) {
   try {
-    if (!(await correr('git', ['remote'], RAIZ)).trim()) return { publicado: false, motivo: 'el repositorio no tiene GitHub configurado' };
+    if (!(await hayGitHub())) return { publicado: false, motivo: 'el repositorio no tiene GitHub configurado' };
     await correr('git', ['add', '-A'], RAIZ);
     if (!(await correr('git', ['status', '--porcelain'], RAIZ)).trim()) return { publicado: true };
-    await correr('git', ['commit', '-m', mensaje], RAIZ);
-    await correr('git', ['push'], RAIZ, 180000);
-    return { publicado: true };
+    await correr('git', ['commit', '-m', mensaje + '\n\nCargado desde ' + os.hostname()], RAIZ);
+    for (let intento = 0; ; intento++) {
+      try { await correr('git', ['push'], RAIZ, 180000); return { publicado: true }; }
+      catch (e) {
+        if (intento >= 2) throw e;
+        try { await correr('git', ['pull', '--rebase'], RAIZ, 180000); }
+        catch (x) { try { await correr('git', ['rebase', '--abort'], RAIZ); } catch (y) { /* nada */ } return { publicado: false, motivo: 'otra persona publicó cambios de la misma obra al mismo tiempo. Lo tuyo quedó en esta compu: volvé a cargar el archivo para publicarlo' }; }
+      }
+    }
   } catch (e) { return { publicado: false, motivo: e.message }; }
 }
 
@@ -103,6 +131,8 @@ async function actualizar(id, indice, avisar = () => {}) {
     const copia = path.join(RAIZ, proc.copia); fs.mkdirSync(path.dirname(copia), { recursive: true }); fs.copyFileSync(origen, copia);
     const st = fs.statSync(origen);
 
+    if (proc.tipo === 'skp' && !SKETCHUP) throw new Error('No encuentro SketchUp instalado en esta compu');
+    if (proc.tipo !== 'skp' && !ACCORE) throw new Error('No encuentro AutoCAD instalado en esta compu (hace falta para leer los DWG)');
     if (proc.tipo === 'skp') {
       avisar('Abriendo el modelo en SketchUp y exportando sus piezas (puede tardar un minuto)');
       const dir = path.join(RAIZ, proc.carpeta), log = path.join(dir, 'log.txt'), salida = path.join(dir, 'skp.json');
@@ -225,7 +255,23 @@ async function agregar(id, ruta, proceso, rolOtro, avisar = () => {}) {
     return { ...r, reemplaza: previo ? path.basename(previo.ruta) : null };
   } catch (e) { escribirLista(copia); try { await nodo('.', 'armar-tablero.js'); } catch (x) {} throw e; }
 }
-module.exports = { actualizar, quitar, agregar, carpeta, opciones, motivoNoQuitar };
+// Subir un archivo desde la compu (el + del menú Archivos): se guarda en la carpeta TABLERO de la obra en OneDrive
+// (así queda junto a los demás archivos de la obra y lo ven las otras compus) y se agrega como cualquier otro.
+// Si ya hay uno con ese nombre, se reemplaza: es la versión nueva.
+async function subir(id, nombre, datos, proceso, rolOtro, avisar = () => {}) {
+  const P = leerLista().find(p => p.id === id);
+  if (!P) throw new Error('Obra desconocida');
+  if (!P.raiz) throw new Error('No encuentro la carpeta de ' + P.nombre + ' en el OneDrive de esta compu');
+  const limpio = path.basename(String(nombre || '')).split('').map(c => c.charCodeAt(0) < 32 || '<>:"/\|?*'.includes(c) ? '_' : c).join('').trim();
+  if (!limpio || !EXT.includes(path.extname(limpio).toLowerCase())) throw new Error('Solo se pueden subir archivos ' + EXT.join(', '));
+  const dir = path.join(P.raiz, 'TABLERO'); fs.mkdirSync(dir, { recursive: true });
+  avisar('Guardando ' + limpio + ' en la carpeta TABLERO de la obra');
+  fs.writeFileSync(path.join(dir, limpio), datos);
+  return agregar(id, 'TABLERO/' + limpio, proceso, rolOtro, avisar, true);
+}
+// Lo que se llama desde afuera trae primero lo último de GitHub (otra compu puede haber cargado algo)
+const conSync = f => async (...a) => { const avisar = typeof a.at(-1) === 'function' ? a.at(-1) : () => {}; await sincronizar(avisar); return f(...a); };
+module.exports = { actualizar: conSync(actualizar), quitar: conSync(quitar), agregar: conSync(agregar), subir: conSync(subir), carpeta, opciones, motivoNoQuitar, programas: () => ({ sketchup: SKETCHUP, autocad: ACCORE }) };
 
 if (require.main === module) {
   const [id, i] = process.argv.slice(2);

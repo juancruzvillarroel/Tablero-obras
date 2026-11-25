@@ -37,4 +37,6 @@ fs.writeFileSync(path.join(raiz, salida), pagina);
 fs.mkdirSync(path.join(raiz, 'docs'), { recursive: true });
 fs.writeFileSync(path.join(raiz, 'docs', 'index.html'), '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}img{max-width:100%}</style></head><body>' + pagina + '</body></html>');
 fs.writeFileSync(path.join(raiz, 'docs', '.nojekyll'), '');
+// El instalador para las compus de los compañeros, descargable desde el menú Archivos de la página online
+fs.copyFileSync(path.join(raiz, 'instalar-tablero.cmd'), path.join(raiz, 'docs', 'instalar-tablero.cmd'));
 console.log('proyectos:', proyectos.map(p => p.nombre + ' (' + p.archivos.map(a => a.nombre + ': ' + a.estado).join(', ') + ')').join(' | '), '→', salida);

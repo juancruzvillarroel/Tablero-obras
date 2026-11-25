@@ -6,14 +6,21 @@
 //   GET  /api/carpeta?proyecto=   archivos de la carpeta de la obra que se pueden agregar
 //   POST /api/quitar              { proyecto, indice }: saca el archivo de la obra (no lo borra de OneDrive)
 //   POST /api/agregar             { proyecto, ruta, proceso, rol }: suma un archivo de la carpeta de la obra
-// Solo escucha en 127.0.0.1, y los POST piden el encabezado X-Tablero: así otra página abierta en el navegador
-// no puede dispararlos (el encabezado obliga a una consulta previa que este servidor no acepta).
-const http = require('http'), fs = require('fs'), path = require('path');
+//   POST /api/subir               el archivo en el cuerpo; X-Proyecto, X-Nombre, X-Proceso, X-Rol: sube un archivo
+//                                 desde la compu (va a la carpeta TABLERO de la obra en OneDrive) y lo carga
+// Solo escucha en 127.0.0.1 y solo atiende pedidos hechos a localhost. Los POST piden el encabezado X-Tablero, que
+// obliga al navegador a consultar antes: se acepta solo desde la página online del tablero (GitHub Pages), así esa
+// página puede subir, quitar y actualizar archivos usando la compu de quien la está mirando, y ninguna otra página
+// abierta en el navegador puede hacerlo.
+const http = require('http'), fs = require('fs'), path = require('path'), os = require('os');
+const ORIGENES = ['https://juancruzvillarroel.github.io'];
+const MAX_SUBIDA = 300 * 1024 * 1024;
 const ARCHIVO = path.join(__dirname, 'argerich-estructura.html');
 const PUERTO = 5180;
 let trabajo = null;   // { proyecto, indice, archivo, pasos: [], fin, ok, error, resultado }
 
 const json = (res, cod, obj) => { res.writeHead(cod, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(obj)); };
+function leerBinario(req, max) { return new Promise((ok, mal) => { const partes = []; let n = 0; req.on('data', c => { n += c.length; if (n > max) { mal(new Error('El archivo es demasiado grande')); req.destroy(); } else partes.push(c); }); req.on('end', () => ok(Buffer.concat(partes))); req.on('error', mal); }); }
 function leerCuerpo(req) { return new Promise(ok => { let b = ''; req.on('data', c => { b += c; if (b.length > 1e4) req.destroy(); }); req.on('end', () => { try { ok(JSON.parse(b || '{}')); } catch (e) { ok({}); } }); }); }
 const fresco = m => { delete require.cache[require.resolve(m)]; return require(m); };
 
@@ -33,13 +40,33 @@ http.createServer((req, res) => atender(req, res).catch(e => {
 })).on('error', e => anotar('servidor:', e)).listen(PUERTO, '127.0.0.1', () => { console.log(`Tablero en http://localhost:${PUERTO}`); anotar('arranca en el puerto', PUERTO); });
 
 async function atender(req, res) {
-  const ruta = req.url.split('?')[0];
+  const ruta = req.url.split('?')[0], origen = req.headers.origin;
+  // solo pedidos dirigidos a localhost (evita que otro nombre que apunte a esta compu lo use)
+  if (!/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(req.headers.host || '')) { res.writeHead(403); return res.end(); }
+  if (origen && ORIGENES.includes(origen)) { res.setHeader('Access-Control-Allow-Origin', origen); res.setHeader('Vary', 'Origin'); res.setHeader('Access-Control-Allow-Private-Network', 'true'); }
+  if (req.method === 'OPTIONS') {
+    if (!origen || !ORIGENES.includes(origen)) { res.writeHead(403); return res.end(); }
+    res.writeHead(204, { 'Access-Control-Allow-Methods': 'GET, POST', 'Access-Control-Allow-Headers': 'Content-Type, X-Tablero, X-Proyecto, X-Proceso, X-Rol, X-Nombre', 'Access-Control-Max-Age': '600' }); return res.end();
+  }
+  if (ruta === '/api/subir' && req.method === 'POST') {
+    if (req.headers['x-tablero'] !== '1') return json(res, 403, { error: 'Pedido no permitido' });
+    if (trabajo && !trabajo.fin) return json(res, 409, { error: 'Hay una actualización en curso: ' + trabajo.archivo });
+    const datos = await leerBinario(req, MAX_SUBIDA), dec = h => { try { return decodeURIComponent(req.headers[h] || ''); } catch (e) { return ''; } };
+    const proyecto = dec('x-proyecto'), nombre = dec('x-nombre'), A = fresco('./actualizar.js');
+    trabajo = { tipo: 'agregar', proyecto, indice: null, archivo: path.basename(nombre), pasos: [], inicio: Date.now(), fin: null };
+    const t = trabajo;
+    A.subir(proyecto, nombre, datos, dec('x-proceso'), dec('x-rol'), m => t.pasos.push(m))
+      .then(r => { t.ok = true; t.resultado = r; }, e => { t.ok = false; t.error = e.message; })
+      .finally(() => { t.fin = Date.now(); });
+    return json(res, 202, { trabajo });
+  }
   if (ruta === '/api/archivos' && req.method === 'GET') {
     const { estadoArchivos } = fresco('./armar-tablero.js'), A = fresco('./actualizar.js');
     const P = fresco('./obras.js').leerObras();
     return json(res, 200, {
       proyectos: Object.fromEntries(P.map(p => [p.id, estadoArchivos(p).map((e, i) => ({ ...e, noQuitar: A.motivoNoQuitar(p.id, p.archivos[i]) }))])),
-      opciones: Object.fromEntries(P.map(p => [p.id, A.opciones(p.id)])), trabajo,
+      opciones: Object.fromEntries(P.map(p => [p.id, A.opciones(p.id)])), trabajo, compu: os.hostname(), programas: A.programas(),
+      carpetas: Object.fromEntries(P.map(p => [p.id, !!p.raiz])),
     });
   }
   if (ruta === '/api/carpeta' && req.method === 'GET') {
