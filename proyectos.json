@@ -79,8 +79,16 @@
         "cargado": "2026-11-20T13:10:15.026Z",
         "tam": 447098,
         "proceso": "skp"
+      },
+      {
+        "rol": "Albañilería",
+        "ruta": "04_DOCUMENTACIÓN TÉCNICA/04_ALBAÑILERÍA/01_MUROS/DWG/LIB_ALB_MUROS.dwg",
+        "cargado": "2026-11-20T17:34:30.408Z",
+        "tam": 746546,
+        "proceso": "alb"
       }
-    ]
+    ],
+    "alb": "lib/alb/albanileria.json"
   },
   {
     "id": "condarco",

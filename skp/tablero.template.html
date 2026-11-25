@@ -11,7 +11,7 @@
   --vidrio: rgb(255 255 255 / .86);
   --s-viga: #2a78d6; --s-columna: #eb6834; --s-losa: #1baf7a; --s-base: #eda100; --s-escalera: #e87ba4; --s-tabique: #008300; --s-viga_fundacion: #6250d6;
   --ok: #0ca30c; --warn: #fab219; --idle: #a9b3be; --crit: #d03b3b; --ghost: #9aa6b2;
-  --a-portante12: #d97ad3; --a-hueco12: #62c6e0; --a-hueco8: #f0a35a;
+  --a-portante12: #d97ad3; --a-hueco12: #62c6e0; --a-hueco8: #f0a35a; --a-hueco18: #8cc27a;
   --i-primaria: #e34948; --i-secundaria: #94552a; --i-pluvial: #eda100; --i-ventilacion: #2a78d6; --i-extraccion: #2a78d6; --i-aire: #8a96a3;
   --f-head: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -22,13 +22,13 @@
   --accent: #6b9cf0; --accent-ink: #0d1520; --canvas: #0b0b0c; --hover: #212123; --ink: #ececec; --ink-fg: #111111;
   --vidrio: rgb(25 25 26 / .86);
   --s-viga: #3987e5; --s-columna: #d95926; --s-losa: #199e70; --s-base: #c98500; --s-escalera: #d55181; --s-tabique: #008300; --s-viga_fundacion: #9085e9;
-  --idle: #4c5866; --ghost: #56636f; --a-portante12: #b55fb0; --a-hueco12: #3fa3bd; --a-hueco8: #c98440; --i-primaria: #e34948; --i-secundaria: #9a5b2c; --i-pluvial: #c98500; --i-ventilacion: #3987e5; --i-extraccion: #3987e5; --i-aire: #6b7785; color-scheme: dark } }
+  --idle: #4c5866; --ghost: #56636f; --a-portante12: #b55fb0; --a-hueco12: #3fa3bd; --a-hueco8: #c98440; --a-hueco18: #5f9a4e; --i-primaria: #e34948; --i-secundaria: #9a5b2c; --i-pluvial: #c98500; --i-ventilacion: #3987e5; --i-extraccion: #3987e5; --i-aire: #6b7785; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #0e0e0f; --surface: #131314; --raised: #19191a; --fg: #ececec; --fg2: #b3b3b3; --muted: #7d7d7d; --line: #29292b; --line2: #202022;
   --accent: #6b9cf0; --accent-ink: #0d1520; --canvas: #0b0b0c; --hover: #212123; --ink: #ececec; --ink-fg: #111111;
   --vidrio: rgb(25 25 26 / .86);
   --s-viga: #3987e5; --s-columna: #d95926; --s-losa: #199e70; --s-base: #c98500; --s-escalera: #d55181; --s-tabique: #008300; --s-viga_fundacion: #9085e9;
-  --idle: #4c5866; --ghost: #56636f; --a-portante12: #b55fb0; --a-hueco12: #3fa3bd; --a-hueco8: #c98440; --i-primaria: #e34948; --i-secundaria: #9a5b2c; --i-pluvial: #c98500; --i-ventilacion: #3987e5; --i-extraccion: #3987e5; --i-aire: #6b7785; color-scheme: dark }
+  --idle: #4c5866; --ghost: #56636f; --a-portante12: #b55fb0; --a-hueco12: #3fa3bd; --a-hueco8: #c98440; --a-hueco18: #5f9a4e; --i-primaria: #e34948; --i-secundaria: #9a5b2c; --i-pluvial: #c98500; --i-ventilacion: #3987e5; --i-extraccion: #3987e5; --i-aire: #6b7785; color-scheme: dark }
 
 html, body { height: 100%; }
 body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 14px; }
@@ -47,7 +47,7 @@ header.obra { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: 
 .solo-visible { color: var(--warn); font-weight: 600; }
 .kpi-filtro { align-self: center; font-size: 11.5px; color: var(--warn); font-weight: 600; border: 1px solid currentColor; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
 /* Las barras del plano y del lápiz van abajo, entre la columna de niveles y capas y los íconos de herramientas. */
-.barra-corte { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 242px); bottom: 12px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 12.5px; z-index: 6; flex-wrap: wrap; max-width: calc(100% - 392px); box-sizing: border-box; }
+.barra-corte { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 242px); bottom: 12px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 12.5px; z-index: 6; flex-wrap: wrap; max-width: calc(100% - 432px); box-sizing: border-box; }
 .barra-corte input[type=range] { width: 160px; accent-color: var(--ink); }
 .barra-corte .btn { padding: 3px 8px; }
 .barra-corte .seg { display: flex; gap: 2px; background: var(--hover); border-radius: 7px; padding: 2px; }
@@ -225,6 +225,12 @@ h2 small { text-transform: none; letter-spacing: 0; font-weight: 400; }
 .medidas div { background: var(--raised); padding: 8px 10px; display: grid; gap: 2px; }
 .medidas span { font-size: 11px; color: var(--muted); }
 .medidas b { font: 500 15px var(--f-mono); font-variant-numeric: tabular-nums; }
+/* Medida editable en la ficha: se ve como el número, con un borde suave que se marca al pasar o al escribir */
+.ed-medida { width: 5.2em; font: 500 14px var(--f-mono); font-variant-numeric: tabular-nums; color: var(--fg); background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 2px 5px; margin: -3px 0; }
+.ed-medida:hover { border-color: var(--muted); }
+.ed-medida:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; background: var(--raised); }
+.medidas small { font-size: 12px; color: var(--muted); font-family: var(--f-body); }
+.medidas b:has(.ed-medida) { display: flex; align-items: baseline; gap: 2px; white-space: nowrap; }
 .estado-sel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .estado-sel button { border: 1px solid var(--line); background: var(--raised); border-radius: 8px; padding: 7px 6px; cursor: pointer; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .estado-sel button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--ink-fg); font-weight: 500; }
@@ -271,8 +277,8 @@ tr.grupo td { background: var(--surface); font: 600 10.5px var(--f-body); text-t
 .btn.prim { background: var(--ink); color: var(--ink-fg); border-color: var(--ink); }
 
 .acciones3d button[aria-pressed="true"] { background: var(--ink); color: var(--ink-fg); }
-.barra-lapiz { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 242px); bottom: 12px; max-width: calc(100% - 392px); box-sizing: border-box; flex-wrap: wrap; display: flex; align-items: center; gap: 10px; padding: 6px 10px; font-size: 12.5px; }
-.barra-medir { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 242px); bottom: 12px; display: flex; align-items: center; gap: 10px; padding: 6px 10px; font-size: 12.5px; z-index: 6; max-width: calc(100% - 392px); flex-wrap: wrap; box-sizing: border-box; }
+.barra-lapiz { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 242px); bottom: 12px; max-width: calc(100% - 432px); box-sizing: border-box; flex-wrap: wrap; display: flex; align-items: center; gap: 10px; padding: 6px 10px; font-size: 12.5px; }
+.barra-medir { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 242px); bottom: 12px; display: flex; align-items: center; gap: 10px; padding: 6px 10px; font-size: 12.5px; z-index: 6; max-width: calc(100% - 432px); flex-wrap: wrap; box-sizing: border-box; }
 .barra-medir span { color: var(--fg2); }
 .capa-medir { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
 .etq-medida { position: absolute; transform: translate(-50%, -130%); background: var(--ink); color: var(--ink-fg); border-radius: 6px; padding: 3px 7px; font-size: 12px; white-space: nowrap; text-align: center; line-height: 1.25; }
@@ -657,7 +663,7 @@ function uvMundo(geo) {
 // ---------- Capas: grupo > elemento, con encendido, color y textura (se guardan en este navegador) ----------
 const CAPAS_DEF = [
   { id: 'estructura', nombre: 'Estructura', capas: [['columna', 'Columnas', 'hormigon', '#ffffff'], ['viga', 'Vigas', 'hormigon', '#f2f2f2'], ['losa', 'Losas', 'hormigon', '#fbfbfb'], ['escalera', 'Escaleras', 'hormigon', '#ffffff'], ['tabique', 'Tabiques H°A', 'hormigon', '#ededed'], ['base', 'Bases', 'hormigon', '#e4e4e4'], ['viga_fundacion', 'Vigas de fundación', 'hormigon', '#e4e4e4']] },
-  { id: 'albanileria', nombre: 'Albañilería', capas: [['portante12', 'Ladrillo portante 12', 'ladrillo', '#ffffff'], ['hueco12', 'Ladrillo hueco 12', 'ladrillo', '#ffdcc6'], ['hueco8', 'Ladrillo hueco 8', 'ladrillo', '#ffeedd']] },
+  { id: 'albanileria', nombre: 'Albañilería', capas: [['portante12', 'Ladrillo portante 12', 'ladrillo', '#ffffff'], ['hueco12', 'Ladrillo hueco 12', 'ladrillo', '#ffdcc6'], ['hueco8', 'Ladrillo hueco 8', 'ladrillo', '#ffeedd'], ['hueco18', 'Ladrillo hueco 18', 'ladrillo', '#e4f0dc']].filter(c => c[0] !== 'hueco18' || ALB.muros.some(m => m.tipo === 'hueco18')) },
   { id: 'sanitaria', nombre: 'Instalación sanitaria', capas: [['primaria', 'Cloacal primaria', 'liso', null], ['secundaria', 'Cloacal secundaria', 'liso', null], ['pluvial', 'Pluvial', 'liso', null], ['ventilacion', 'Ventilación y extractores', 'liso', null], ['aire', 'Desagüe aire acond.', 'liso', null], ['artefactos', 'Artefactos', 'liso', '#f3f4f6'], ['numeros', 'N° de bajada'], ['pases', 'Faltan pases'], ['cruces', 'Cruces con vigas']] },
 ];
 const CAPA_GRUPO = {}; const CAPA_DEF = {};
@@ -681,6 +687,45 @@ function muestraCSS(id) {
 }
 
 const URL_TEX = {}; const urlTex = k => URL_TEX[k] ||= LIENZOS[k].toDataURL();
+// ---------- Medidas editadas desde la ficha (estructura) ----------
+// En la ficha de cada pieza se puede escribir una medida nueva. La pieza se estira o se acorta sobre ese eje dejando
+// fija una cara: las columnas y tabiques, la de abajo (apoyo); las vigas y losas, la de arriba (fondo de losa); en el
+// largo de las vigas, el arranque. Se guarda la medida pedida y se aplica sobre la geometría original al cargar.
+const medidasEditadas = leer('medidasEditadas', {});
+const EDITABLE = { columna: { alto: 'abajo' }, tabique: { alto: 'abajo' }, viga: { alto: 'arriba', largo: 'inicio' }, viga_fundacion: { alto: 'arriba', largo: 'inicio' }, losa: { alto: 'arriba' } };
+const extensionV = (v, k) => { let lo = 1e9, hi = -1e9; for (let i = k; i < v.length; i += 3) { lo = Math.min(lo, v[i]); hi = Math.max(hi, v[i]); } return [lo / 100, hi / 100]; };
+const ejeLargoEl = e => { const v = e.v0 || e.v, [x0, x1] = extensionV(v, 0), [y0, y1] = extensionV(v, 1); return x1 - x0 >= y1 - y0 ? 0 : 1; };
+// Medida actual de una pieza sobre un campo ('alto' = vertical; 'largo' = el eje largo en planta)
+const ejeDe = (e, campo) => campo === 'alto' ? 2 : ejeLargoEl(e);
+const medidaDe = (e, campo, v = e.v) => { const [lo, hi] = extensionV(v, ejeDe(e, campo)); return hi - lo; };
+// Estira la pieza (sus vértices en cm y, si ya está dibujada, su malla) para que mida `valor` sobre el campo
+function estirarEl(e, campo, valor) {
+  const k = ejeDe(e, campo), [lo, hi] = extensionV(e.v, k), regla = EDITABLE[e.t][campo];
+  const fijo = regla === 'arriba' ? hi : lo, f = valor / (hi - lo); if (!isFinite(f) || f <= 0) return 1;
+  for (let i = k; i < e.v.length; i += 3) e.v[i] = Math.round((fijo + (e.v[i] / 100 - fijo) * f) * 10000) / 100;
+  if (e.malla) {
+    // en la escena: x = x, altura = y, y del plano = -z (ver la armada de mallas)
+    const g = e.malla.geometry, p = g.attributes.position, ia = k === 0 ? 0 : k === 2 ? 1 : 2;
+    const aEsc = c => k === 0 ? c - OX : k === 2 ? c : -(c - OY), fe = aEsc(fijo);
+    const A = p.array; for (let i = ia; i < A.length; i += 3) A[i] = fe + (A[i] - fe) * f;
+    p.needsUpdate = true; g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere(); uvMundo(g);
+    e.malla.children[0].geometry.dispose(); e.malla.children[0].geometry = new THREE.EdgesGeometry(g, 25);
+  }
+  return f;
+}
+// Aplica las medidas guardadas desde la geometría original y recalcula volumen y medidas de la ficha
+function aplicarMedidasEl(e) {
+  if (!e.v0) { e.v0 = e.v.slice(); e.volBruto0 = e.volBruto ?? e.vol; e.largo0 = e.largo; e.alto0 = e.alto; }
+  const ed = medidasEditadas[e.id] || {};
+  // se vuelve al original y se estira de nuevo
+  for (const campo of ['alto', 'largo']) if (EDITABLE[e.t] && EDITABLE[e.t][campo]) { const actual = medidaDe(e, campo), orig = medidaDe(e, campo, e.v0); if (Math.abs(actual - orig) > 1e-6) estirarEl(e, campo, orig); }
+  let F = 1;
+  for (const [campo, valor] of Object.entries(ed)) if (EDITABLE[e.t] && EDITABLE[e.t][campo]) F *= estirarEl(e, campo, valor);
+  e.volBruto = Math.round(e.volBruto0 * F * 1000) / 1000;
+  if (e.largo0 != null) e.largo = Math.round((ed.largo ?? e.largo0) * 100) / 100;
+  if (e.alto0 != null) e.alto = Math.round((ed.alto ?? e.alto0) * 100) / 100;
+}
+for (const e of EL) if (medidasEditadas[e.id]) aplicarMedidasEl(e);
 const bordeMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.16 });
 const mallas = [];
 for (const e of EL) {
@@ -747,8 +792,9 @@ function visible(e) {
   return hastaAca ? nivIdx[e.l] <= nivIdx[nivelSel] : e.l === nivelSel;
 }
 const BLANCO = new THREE.Color(0xffffff);
-const TRANSP_FOCO = 0.16;                       // opacidad de lo que no es el elemento elegido
-const bordeTenue = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.08, depthWrite: false });
+// Lo que no es el elemento elegido: gris claro liso, casi opaco (10 % de transparencia). Se sigue leyendo como sólido,
+// no como rayos X: tapa lo que tiene atrás y el elegido se destaca por su color.
+const TRANSP_FOCO = 0.9, GRIS_FOCO = new THREE.Color(0xdcdcdc);
 function pintar() {
   const cache = {}; const col = e => { const k = modo === 'instalacion' ? (VIGAS_CRUZADAS.has(e.id) ? 'x' : 'g') : modo === 'tipo' ? e.t : modo === 'nivel' ? e.l : est(e.id); return cache[k] ??= colorDe(e); };
   for (const e of EL) {
@@ -757,16 +803,14 @@ function pintar() {
     if (modo === 'tipo' || modo === 'avance') vestir(mat, e.t);
     else { const c = capaEstado[e.t], mapa = modo !== 'instalacion' && c && c.tex && c.tex !== 'liso' ? TEX[c.tex] : null; if (mat.map !== mapa) { mat.map = mapa; mat.needsUpdate = true; } mat.color.set(col(e)); }
     const inst = modo === 'instalacion' && !VIGAS_CRUZADAS.has(e.id);
-    // Con un elemento elegido, el resto se aclara y se vuelve transparente, para que el elegido se vea aunque quede
-    // detrás de losas o columnas; sus bordes quedan tenues para seguir leyendo la forma del edificio.
+    // Con un elemento elegido, el resto queda gris claro y apenas transparente (ver TRANSP_FOCO).
     const aclarado = !!seleccion && seleccion !== e.id;
     const fantasma = modo === 'instalacion' && (aclarado || inst);
     mat.opacity = modo === 'instalacion' ? (VIGAS_CRUZADAS.has(e.id) ? 0.45 : e.t === 'losa' ? 0.28 : 0.08) : (modo === 'avance' && !hecho(e.id) ? 0.15 : 1);
     mat.transparent = mat.opacity < 1; mat.depthWrite = modo !== 'instalacion' && mat.opacity === 1;
-    if (aclarado && modo !== 'instalacion') { mat.color.lerp(BLANCO, 0.4); mat.emissive.set(0x4a4a4a); mat.opacity = Math.min(mat.opacity, TRANSP_FOCO); mat.transparent = true; mat.depthWrite = false; }
+    if (aclarado && modo !== 'instalacion') { if (mat.map) { mat.map = null; mat.needsUpdate = true; } mat.color.copy(GRIS_FOCO); mat.emissive.set(0x202020); mat.opacity = Math.min(mat.opacity, TRANSP_FOCO); mat.transparent = true; mat.depthWrite = true; }
     else mat.emissive.set(e.id === hover ? 0x2a2a2a : (e.id === seleccion ? 0x1c2a40 : 0x000000));
     m.children[0].visible = !fantasma || inst;
-    m.children[0].material = aclarado && modo !== 'instalacion' ? bordeTenue : bordeMat;
   }
   pintarSan();
   pintarMuros();
@@ -804,6 +848,7 @@ function elegirNivel(id) {
   });
   if (seleccion && porId[seleccion] && !visible(porId[seleccion])) elegir(null);
   pintar(); refrescarElementos(); refrescarComputo(); if (pestana === 'albanileria') refrescarAlbanileria();
+  if (window.__lapizNivel) window.__lapizNivel(id);
 }
 $('#verTodo').onclick = () => elegirNivel(null);
 $('#hastaAca').onchange = ev => { hastaAca = ev.target.checked; elegirNivel(nivelSel); };
@@ -975,9 +1020,11 @@ function notaComun(e) {
   return h + '<span style="color:var(--muted)">Criterio: base &gt; columna y tabique &gt; losa &gt; viga &gt; escalera; entre iguales, la más grande.</span></div>';
 }
 function medidasDe(e) {
-  const m = [['Sección', e.s || '—', false]];
-  if (e.largo != null) m.push(['Largo', fmt(e.largo) + ' m', true]);
-  if (e.alto != null) m.push(['Alto', fmt(e.alto) + ' m', true]);
+  const m = [['Sección', e.s || '—', false]], ed = EDITABLE[e.t] || {};
+  const campo = (c, valor, etq) => campoMedida(valor, `data-el="${e.id}" data-campo="${c}"`, etq + ' de ' + e.n);
+  if (e.largo != null) m.push(['Largo', ed.largo ? campo('largo', e.largo, 'Largo') : fmt(e.largo) + ' m', true]);
+  if (e.alto != null) m.push(['Alto', ed.alto ? campo('alto', e.alto, 'Alto') : fmt(e.alto) + ' m', true]);
+  else if (ed.alto) m.push([e.t === 'losa' ? 'Espesor' : 'Alto', campo('alto', medidaDe(e, 'alto'), e.t === 'losa' ? 'Espesor' : 'Alto'), true]);
   if (e.area != null) m.push(['Superficie', fmt(e.area) + ' m²', true]);
   m.push(['Hormigón', fmt(e.vol, 3) + ' m³', true], ['Acero est.', fmt(acero(e), 0) + ' kg', true]);
   if (descActivos(e).length) m.push(['Hormigón bruto', fmt(e.volBruto, 3) + ' m³', true]);
@@ -1002,6 +1049,7 @@ function refrescarResumen() {
         <button class="cerrar" type="button" id="cerrarFicha">Cerrar ✕</button></div>
       <div class="medidas">${medidasDe(e).map(([k, v, n]) => `<div><span>${k}</span><b${n ? '' : ' style="font-family:var(--f-body)"'}>${v}</b></div>`).join('')}</div>
       <div>${casillaHecho(e.id)}</div>
+      ${medidasEditadas[e.id] ? `<div class="comparar"><span class="dif">Medidas cambiadas en el tablero (original: ${Object.keys(medidasEditadas[e.id]).map(c => (c === 'largo' ? 'largo ' : e.t === 'losa' ? 'espesor ' : 'alto ') + fmt(medidaDe(e, c, e.v0), 2) + ' m').join(', ')}).</span><button type="button" class="btn" data-restablecer-el="${e.id}" style="justify-self:start;margin-top:4px">Volver al original</button></div>` : ''}
       ${notaComun(e)}${comp}${e.dud ? `<div class="comparar"><span class="dif">La pieza no es un sólido cerrado en el SketchUp (le faltan caras). El volumen se midió con rayos verticales cada 2 mm; conviene corregirla en el modelo.</span></div>` : ''}</div>`;
   } else {
     h += `<div class="vacio">Pasá el mouse sobre el modelo para ver qué es cada pieza y hacé clic para ver su ficha: medidas, cómputo, estado de obra y cómo se compara con el plano del ingeniero. También podés buscarla en <b>Elementos</b>.<br><br><b>Mover:</b> doble clic sobre un muro o un elemento de estructura y después agarralo y arrastralo; se engancha con lo que tiene cerca (Shift: en una dirección, Alt: sin enganche). <b>Navegar</b> como en SketchUp: ruedita apretada orbita, Shift + ruedita desplaza, girar la ruedita acerca hacia el cursor. Ctrl+Z deshace.</div>`;
@@ -1278,21 +1326,24 @@ SAN.artefactos.forEach((a, i) => {
   SANP[id] = { k: 'artefacto', o: a, m: g, ppal: cont.children[0], nivel: PISO_NIVEL[a.piso], centro: v3(a.x, a.y, a.z + 0.4) };
 });
 
-// ---------- Albañilería (RICH_ALB_MUROS.dwg) ----------
+// ---------- Albañilería (CAD de muros de cada obra) ----------
+// Nombre del archivo de la obra del que sale cada parte (el que figura en el menú Archivos)
+const archivoDe = proceso => ((PROY.archivos || []).find(a => a.proceso === proceso) || {}).nombre;
 // Cada muro es un elemento: su planta exacta (rectángulos a 1 cm de los filos dibujados) extruida desde el piso
 // hasta el fondo de la losa o viga de arriba. Colores como en el CAD: rosa portante 12, celeste hueco 12, naranja hueco 8.
-const TIPO_MURO = { portante12: 'Ladrillo portante 12', hueco12: 'Ladrillo hueco 12', hueco8: 'Ladrillo hueco 8' };
-const PISO_MURO = { PB: 'sPB', P1: 's1', P2: 's2', P3: 's3', P4: 's4', P5: 's5', SM: 'sSM' };
-const NOM_PISO_MURO = { PB: 'Planta baja', P1: '1° piso', P2: '2° piso', P3: '3° piso', P4: '4° piso', P5: 'Azotea', SM: 'Sala de máquinas' };
-const LADRILLOS_DEF = { portante12: 15, hueco12: 15, hueco8: 15 };      // unidades por m² (ladrillo de 33 cm de largo)
+const TIPO_MURO = { portante12: 'Ladrillo portante 12', hueco12: 'Ladrillo hueco 12', hueco8: 'Ladrillo hueco 8', ...(ALB.muros.some(m => m.tipo === 'hueco18') ? { hueco18: 'Ladrillo hueco 18' } : {}) };
+// Pisos de los muros: cada obra puede traer los suyos en albanileria.json (Libertador: azotea y techo de la sala de
+// máquinas); si no, los de Argerich.
+const PISO_MURO = ALB.pisos ? Object.fromEntries(Object.entries(ALB.pisos).map(([k, p]) => [k, p.nivel])) : { PB: 'sPB', P1: 's1', P2: 's2', P3: 's3', P4: 's4', P5: 's5', SM: 'sSM' };
+const NOM_PISO_MURO = ALB.pisos ? Object.fromEntries(Object.entries(ALB.pisos).map(([k, p]) => [k, p.nombre])) : { PB: 'Planta baja', P1: '1° piso', P2: '2° piso', P3: '3° piso', P4: '4° piso', P5: 'Azotea', SM: 'Sala de máquinas' };
+const LADRILLOS_DEF = { portante12: 15, hueco12: 15, hueco8: 15, hueco18: 15 };      // unidades por m² (ladrillo de 33 cm de largo)
 let ladrillos = { ...LADRILLOS_DEF, ...leer('ladrillos', {}) };
 const albOn = { muros: true };
 const matMuro = {}; const mM = t => matMuro[t] ||= new THREE.MeshLambertMaterial({ color: css('--a-' + t), transparent: true });
 const bordeMuro = new THREE.LineBasicMaterial({ color: 0x3a3f45, transparent: true, opacity: 0.35 });
 const MUROS = [];
 for (const m of ALB.muros) {
-  const gs = m.cajas.map(([x0, y0, x1, y1]) => new THREE.BoxGeometry(x1 - x0, m.z1 - m.z0, y1 - y0).translate((x0 + x1) / 2 - OX, (m.z0 + m.z1) / 2, -((y0 + y1) / 2 - OY)));
-  const geo = uvMundo(merge(gs)), mesh = new THREE.Mesh(geo, mM(m.tipo));
+  const geo = geoMuro(m), mesh = new THREE.Mesh(geo, mM(m.tipo));
   const id = 'muro:' + m.id; mesh.userData.id = id;
   mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), bordeMuro));
   escena.add(mesh); sanMallas.push(mesh); MUROS.push(mesh);
@@ -1319,12 +1370,12 @@ function refrescarAlbanileria() {
   const tot = M.reduce((a, m) => (a.sup += m.sup, a.vol += m.vol, a.lad += ladrillosDe(m), a.largo += m.largo, a), { sup: 0, vol: 0, lad: 0, largo: 0 });
   let h = '';
   if (seleccion && SANP[seleccion]?.k === 'muro') h += '<section><h2>Elemento</h2>' + fichaSan(seleccion).replace('id="cerrarFicha"', 'data-cerrar') + '</section>';
-  h += `<section><h2>Albañilería <small>${nivelSel ? (hastaAca ? 'hasta ' : '') + NIV[nivIdx[nivelSel]].corto : 'toda la obra'} · ${esc(ALB.fuente || 'RICH_ALB_MUROS.dwg')}${marcaVisible()}</small></h2>
+  h += `<section><h2>Albañilería <small>${nivelSel ? (hastaAca ? 'hasta ' : '') + NIV[nivIdx[nivelSel]].corto : 'toda la obra'} · ${esc(ALB.fuente || archivoDe('alb') || 'CAD de albañilería')}${marcaVisible()}</small></h2>
     <div class="medidas" style="grid-template-columns:repeat(4,minmax(0,1fr))">
       <div><span>Muros</span><b>${M.length}</b></div><div><span>Superficie</span><b>${fmt(tot.sup, 0)} m²</b></div>
       <div><span>Largo</span><b>${fmt(tot.largo, 0)} m</b></div><div><span>Ladrillos</span><b>${fmt(tot.lad, 0)}</b></div></div>
     <p class="nota">Superficie de muro = largo × alto (de piso al fondo de losa o viga), sin la parte que ocupa la estructura ni los encuentros entre muros (${fmt(ALB.muros.filter(cuentaMuro).reduce((a, m) => a + netoMuro(m).desc * fMuro(m), 0), 1)} m² descontados). Clic en un nivel del corte para filtrar.</p></section>`;
-  const pisosOrd = ['PB', 'P1', 'P2', 'P3', 'P4', 'P5', 'SM'];
+  const pisosOrd = Object.keys(PISO_MURO);
   const tipos = Object.keys(TIPO_MURO);
   h += `<section><h2>Por piso y tipo <small>m²</small></h2><div class="tabla-wrap"><table><thead><tr><th>Piso</th>${tipos.map(t => `<th class="r"><span class="sw" style="display:inline-block;background:var(--a-${t})" title="${TIPO_MURO[t]}"></span></th>`).join('')}<th class="r">Total</th></tr></thead><tbody>` +
     pisosOrd.filter(p => M.some(m => m.piso === p)).map(p => { const s = t => M.filter(m => m.piso === p && (!t || m.tipo === t)).reduce((a, m) => a + m.sup, 0);
@@ -1378,16 +1429,71 @@ function largoCajas(cajas) {
   return hi - lo;
 }
 // Espesor dibujado del muro (para pasar a superficie lo que ocupa la estructura u otro muro)
-const espMuro = m => { const L = largoCajas(m.cajas); return L > 0 ? Math.max(1e-3, m.cajas.reduce((a, r) => a + (r[2] - r[0]) * (r[3] - r[1]), 0) / L) : 1e-3; };
+const espMuro = m => { if (m.eje) return espEje(m); const L = largoCajas(m.cajas); return L > 0 ? Math.max(1e-3, m.cajas.reduce((a, r) => a + (r[2] - r[0]) * (r[3] - r[1]), 0) / L) : 1e-3; };
 function recalcularMuro(m) {
+  if (m.eje) { const L = Math.hypot(m.eje.b[0] - m.eje.a[0], m.eje.b[1] - m.eje.a[1]); m.planta = L * espEje(m); m.alto = +(m.z1 - m.z0).toFixed(3); m.largo = +L.toFixed(2); m.sup = +(m.largo * m.alto).toFixed(2); m.vol = +(m.planta * m.alto).toFixed(3); return; }
   m.planta = m.cajas.reduce((a, r) => a + (r[2] - r[0]) * (r[3] - r[1]), 0);
   m.alto = +(m.z1 - m.z0).toFixed(3);
   m.largo = +largoCajas(m.cajas).toFixed(2); m.sup = +(m.largo * m.alto).toFixed(2); m.vol = +(m.planta * m.alto).toFixed(3);
 }
+// ---------- Muros en diagonal ----------
+// Un muro dibujado en diagonal guarda su eje (m.eje = { a: [x, y], b: [x, y] }) y su espesor: con eso se dibuja exacto
+// (un solo sólido) y se miden su largo y su superficie. Para los descuentos contra la estructura y otros muros, y para
+// los enganches, se arma por debajo una escalera de cajas de 2 cm (m.cajas), como en las medianeras inclinadas.
+const ESC_DIAG = 0.02;
+function espEje(m) { return m.espDib || (typeof ESP_TIPO !== 'undefined' && ESP_TIPO[m.tipo]) || m.esp || 0.1; }
+function esquinasEje(m) {
+  const [ax, ay] = m.eje.a, [bx, by] = m.eje.b, L = Math.hypot(bx - ax, by - ay) || 1, h = espEje(m) / 2;
+  const nx = -(by - ay) / L * h, ny = (bx - ax) / L * h;
+  return [[ax + nx, ay + ny], [bx + nx, by + ny], [bx - nx, by - ny], [ax - nx, ay - ny]];
+}
+function cajasDeEje(m) {
+  const P = esquinasEje(m), xs = P.map(p => p[0]), ys = P.map(p => p[1]);
+  const ej = (Math.max(...xs) - Math.min(...xs)) >= (Math.max(...ys) - Math.min(...ys)) ? 0 : 1, pe = 1 - ej;
+  const lo = Math.min(...P.map(p => p[ej])), hi = Math.max(...P.map(p => p[ej])), out = [];
+  for (let u = lo; u < hi - 1e-6; u += ESC_DIAG) {
+    const u2 = Math.min(hi, u + ESC_DIAG), um = (u + u2) / 2, vs = [];
+    for (let i = 0; i < 4; i++) { const p = P[i], q = P[(i + 1) % 4]; if ((p[ej] - um) * (q[ej] - um) <= 0 && p[ej] !== q[ej]) vs.push(p[pe] + (q[pe] - p[pe]) * (um - p[ej]) / (q[ej] - p[ej])); }
+    if (vs.length < 2) continue;
+    const a = Math.min(...vs), b = Math.max(...vs);
+    out.push((ej ? [a, u, b, u2] : [u, a, u2, b]).map(v => +v.toFixed(4)));
+  }
+  return out;
+}
+// Malla de un muro. Un muro inclinado (las medianeras que siguen la viga, o un muro del CAD que no está a escuadra)
+// viene como una escalera de cajas de 1 cm para los cómputos; se dibuja como UN solo sólido con su contorno real
+// (las caras de la escalera, suavizadas), sin juntas entre las cajas. Los demás, con sus cajas.
+function contornoEscalera(cajas) {
+  if (cajas.length < 2) return null;
+  const x0 = Math.min(...cajas.map(r => r[0])), x1 = Math.max(...cajas.map(r => r[2])), y0 = Math.min(...cajas.map(r => r[1])), y1 = Math.max(...cajas.map(r => r[3]));
+  const ej = (y1 - y0) >= (x1 - x0) ? 1 : 0, pe = 1 - ej;                  // ej: eje del largo; pe: el del espesor
+  const L = cajas.slice().sort((a, b) => a[ej] - b[ej]);
+  for (let i = 1; i < L.length; i++) if (Math.abs(L[i][ej] - L[i - 1][ej + 2]) > 0.003 || L[i][pe] > L[i - 1][pe + 2] || L[i][pe + 2] < L[i - 1][pe]) return null;
+  // bordes del muro en cada tramo (en el medio de cada caja, y en las puntas)
+  const lado = k => { const p = [[L[0][k], L[0][ej]]]; for (const r of L) p.push([r[k], (r[ej] + r[ej + 2]) / 2]); p.push([L.at(-1)[k], L.at(-1)[ej + 2]]); return simplificar(p, 0.006); };
+  const izq = lado(pe), der = lado(pe + 2);
+  const pts = izq.concat(der.reverse()).map(([a, b]) => ej ? [a, b] : [b, a]);   // [x, y] del plano
+  return pts;
+}
+function simplificar(p, tol) {                                               // Douglas-Peucker
+  if (p.length < 3) return p;
+  const [a, b] = [p[0], p.at(-1)], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1;
+  let k = -1, dm = 0; for (let i = 1; i < p.length - 1; i++) { const d = Math.abs((p[i][0] - a[0]) * dy - (p[i][1] - a[1]) * dx) / L; if (d > dm) { dm = d; k = i; } }
+  return dm > tol ? simplificar(p.slice(0, k + 1), tol).slice(0, -1).concat(simplificar(p.slice(k), tol)) : [a, b];
+}
+function geoMuro(m) {
+  const pts = m.eje ? esquinasEje(m) : contornoEscalera(m.cajas);
+  if (pts) {
+    const forma = new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x - OX, y - OY)));
+    const g = new THREE.ExtrudeGeometry(forma, { depth: m.z1 - m.z0, bevelEnabled: false });
+    g.rotateX(-Math.PI / 2); g.translate(0, m.z0, 0);
+    return uvMundo(g);
+  }
+  return uvMundo(merge(m.cajas.map(([x0, y0, x1, y1]) => new THREE.BoxGeometry(x1 - x0, m.z1 - m.z0, y1 - y0).translate((x0 + x1) / 2 - OX, (m.z0 + m.z1) / 2, -((y0 + y1) / 2 - OY)))));
+}
 function rehacerMuro(m) {
   const mesh = mallaMuro[m.id];
-  const gs = m.cajas.map(([x0, y0, x1, y1]) => new THREE.BoxGeometry(x1 - x0, m.z1 - m.z0, y1 - y0).translate((x0 + x1) / 2 - OX, (m.z0 + m.z1) / 2, -((y0 + y1) / 2 - OY)));
-  const geo = uvMundo(merge(gs)); mesh.geometry.dispose(); mesh.geometry = geo;
+  const geo = geoMuro(m); mesh.geometry.dispose(); mesh.geometry = geo;
   mesh.children[0].geometry.dispose(); mesh.children[0].geometry = new THREE.EdgesGeometry(geo, 30);
 }
 // Muros que se meten en la estructura o en otro muro: esa parte no es mampostería y no se cuenta dos veces.
@@ -1503,7 +1609,7 @@ function ponerFlechas() {
   if (!s || s.k !== 'muro' || !s.m.visible) return;
   const m = s.o, zc = (m.z0 + m.z1) / 2;
   const nueva = (pos, dir, datos) => { const f = new THREE.Mesh(geoFlecha, matFlecha); f.renderOrder = 10; f.position.copy(pos).addScaledVector(dir, 0.03); f.quaternion.setFromUnitVectors(UP, dir); f.userData = { muro: m.id, dir, ...datos }; grupoFlechas.add(f); flechas.push(f); };
-  for (const p of puntasLibres(m)) {
+  for (const p of m.eje ? [] : puntasLibres(m)) {
     const r = m.cajas[p.k], mid = [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2]; mid[p.ej] = r[p.ej + p.lado * 2];
     nueva(v3(mid[0], mid[1], zc), p.ej === 0 ? new THREE.Vector3(p.lado ? 1 : -1, 0, 0) : new THREE.Vector3(0, 0, p.lado ? -1 : 1), p);
   }
@@ -1515,7 +1621,7 @@ function ponerFlechas() {
   // Costados: una flecha en cada cara lateral del tramo más largo. Corre el muro entero de costado sin cambiar
   // su espesor (el espesor define el tipo de muro y sus materiales), para apoyarlo contra una cara de otra pieza.
   const lat = (r[2] - r[0]) >= (r[3] - r[1]) ? 1 : 0;
-  for (const lado of [0, 1]) {
+  for (const lado of m.eje ? [] : [0, 1]) {
     const mid = [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2]; mid[lat] = r[lat + lado * 2];
     nueva(v3(mid[0], mid[1], zc), lat === 0 ? new THREE.Vector3(lado ? 1 : -1, 0, 0) : new THREE.Vector3(0, 0, lado ? -1 : 1), { k, ej: lat, lado, lateral: true });
   }
@@ -1671,14 +1777,15 @@ function restablecerMuro(id) {
   recalcularMuro(m); rehacerMuro(m); ponerFlechas(); refrescarKpis(); if (pestana === 'albanileria') refrescarAlbanileria(); refrescarResumen();
 }
 
-// ---------- Foco: con un elemento elegido, todo lo demás se aclara y queda transparente (también lo de su misma capa) ----------
+// ---------- Foco: con un elemento elegido, todo lo demás queda gris claro (también lo de su misma capa) ----------
 const _tenue = new Map(), _resalte = new Map();
 const matBordeSel = new THREE.LineBasicMaterial({ color: css('--accent'), transparent: true, opacity: 0.9 });
 function tenue(mat) {
   let f = _tenue.get(mat); if (!f) { f = mat.clone(); _tenue.set(mat, f); }
-  f.map = mat.map; if (f.color && mat.color) f.color.copy(mat.color).lerp(BLANCO, 0.5);
-  if (f.emissive) f.emissive.set(0x6e6e6e);                  // levanta los oscuros: textura con menos contraste
-  f.transparent = true; f.opacity = Math.min(mat.opacity, TRANSP_FOCO); f.depthWrite = false; return f;
+  // gris claro liso, como la estructura (ver TRANSP_FOCO)
+  f.map = null; if (f.color) f.color.copy(GRIS_FOCO);
+  if (f.emissive) f.emissive.set(0x202020);
+  f.transparent = true; f.opacity = Math.min(mat.opacity, TRANSP_FOCO); f.depthWrite = true; f.needsUpdate = true; return f;
 }
 function resaltado(mat) {
   let f = _resalte.get(mat); if (!f) { f = mat.clone(); _resalte.set(mat, f); }
@@ -1706,12 +1813,11 @@ function aplicarFoco() {
 // Con un piso aislado: primer clic = inicio, segundo clic = fin. El muro sale recto (en x o en y), con el espesor
 // de su tipo, centrado en la línea dibujada y con la altura hasta el fondo de la losa o viga de arriba.
 // Los puntos se enganchan a caras de columnas, tabiques, vigas y muros, y a ejes y filos de muros.
-const PISO_DE_NIVEL = Object.fromEntries(Object.entries(PISO_MURO).map(([p, n]) => [n, p]));
-const ESP_TIPO = { portante12: 0.15, hueco12: 0.15, hueco8: 0.10 };
+const PISO_DE_NIVEL = Object.fromEntries(Object.entries(PISO_MURO).reverse().map(([p, n]) => [n, p]));
+const ESP_TIPO = { portante12: 0.15, hueco12: 0.15, hueco8: 0.10, hueco18: 0.20 };
 const murosNuevos = leer('murosNuevos', []);
 function crearMallaMuro(m) {
-  const gs = m.cajas.map(([x0, y0, x1, y1]) => new THREE.BoxGeometry(x1 - x0, m.z1 - m.z0, y1 - y0).translate((x0 + x1) / 2 - OX, (m.z0 + m.z1) / 2, -((y0 + y1) / 2 - OY)));
-  const geo = uvMundo(merge(gs)), mesh = new THREE.Mesh(geo, mM(m.tipo)), id = 'muro:' + m.id;
+  const geo = geoMuro(m), mesh = new THREE.Mesh(geo, mM(m.tipo)), id = 'muro:' + m.id;
   mesh.userData.id = id; mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), bordeMuro));
   escena.add(mesh); sanMallas.push(mesh); MUROS.push(mesh); mallaMuro[m.id] = mesh; muroPorId[m.id] = m;
   const r = m.cajas[0];
@@ -1722,7 +1828,7 @@ function agregarMuroNuevo(m) {
   ALB.muros.push(m); recalcularMuro(m); crearMallaMuro(m);
 }
 for (const d of murosNuevos) agregarMuroNuevo({ ...d, cajas: d.cajas.map(r => r.slice()) });
-const guardarNuevos = () => guardar('murosNuevos', ALB.muros.filter(m => m.nuevo).map(m => ({ id: m.id, nombre: m.nombre, piso: m.piso, tipo: m.tipo, nombreTipo: m.nombreTipo, esp: m.esp, cajas: m.cajas, z0: m.z0, z1: m.z1 })));
+const guardarNuevos = () => guardar('murosNuevos', ALB.muros.filter(m => m.nuevo).map(m => ({ id: m.id, nombre: m.nombre, piso: m.piso, tipo: m.tipo, nombreTipo: m.nombreTipo, esp: m.esp, espDib: m.espDib, eje: m.eje, cajas: m.cajas, z0: m.z0, z1: m.z1 })));
 function eliminarMuro(id) { eliminar('muro:' + id); }
 function eliminarMuroViejo(id) {
   const m = muroPorId[id]; if (!m || !m.nuevo) return;
@@ -1734,38 +1840,88 @@ function eliminarMuroViejo(id) {
 document.addEventListener('click', ev => { const b = ev.target.closest('[data-eliminar-muro]'); if (b) eliminarMuro(b.dataset.eliminarMuro); });
 
 // Estado del lápiz
-let lapiz = null;            // { piso, tipo, z0, a: [x,y] | null }
-const matPrevia = new THREE.MeshBasicMaterial({ color: css('--ink'), transparent: true, opacity: 0.45, depthTest: false });
-const previa = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), matPrevia); previa.visible = false; previa.renderOrder = 12; escena.add(previa);
-const marca = new THREE.Mesh(new THREE.RingGeometry(0.06, 0.1, 24).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: css('--ink'), depthTest: false, side: THREE.DoubleSide }));
-marca.visible = false; marca.renderOrder = 13; escena.add(marca);
+// El lápiz dibuja un muro con dos clics (o un clic y el largo tipeado + Enter), en cualquier dirección:
+// - El ángulo engancha a 0°, 45° y 90° si está a menos de 3°; Shift lo traba a escuadra; Alt lo deja libre.
+// - Los puntos se enganchan a esquinas de muros y columnas (lo más preciso), o a caras, ejes y filos (a escuadra).
+// - El largo se redondea al centímetro, y se puede tipear (2,35 + Enter) con el primer punto puesto.
+// - En la planta se ve la silueta del muro con su espesor: un cuadrado al buscar el inicio, el muro entero después.
+// - Con un piso aislado se dibuja sobre ese piso; si no (todo a la vista, o "mostrar también los de abajo"), sobre
+//   la losa que está bajo el mouse; con el primer clic el piso queda fijo.
+let lapiz = null;            // { piso, tipo, z0, a: [x,y] | null, tecleo: '' }
+const matPrevia = new THREE.MeshBasicMaterial({ color: css('--ink'), transparent: true, opacity: 0.35, depthTest: false });
+const previa = new THREE.Mesh(new THREE.BufferGeometry(), matPrevia); previa.visible = false; previa.renderOrder = 12; escena.add(previa);
+const matSilueta = new THREE.MeshBasicMaterial({ color: css('--ink'), transparent: true, opacity: 0.25, depthTest: false, side: THREE.DoubleSide });
+const silueta = new THREE.Mesh(new THREE.BufferGeometry(), matSilueta); silueta.visible = false; silueta.renderOrder = 13; escena.add(silueta);
+const bordeSilueta = new THREE.LineLoop(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: css('--ink'), depthTest: false }));
+bordeSilueta.visible = false; bordeSilueta.renderOrder = 14; escena.add(bordeSilueta);
+const marca = silueta;       // compatibilidad: otras partes apagan "marca"
 const barraLapiz = document.createElement('div'); barraLapiz.className = 'flota barra-lapiz'; barraLapiz.hidden = true;
-barraLapiz.innerHTML = `<b>Dibujar muro</b><select id="lapizTipo" aria-label="Tipo de muro"><option value="hueco8">Ladrillo hueco 8</option><option value="hueco12">Ladrillo hueco 12</option><option value="portante12">Ladrillo portante 12</option></select><span id="lapizAyuda"></span><button type="button" class="btn" id="lapizSalir">Terminar</button>`;
+barraLapiz.innerHTML = `<b>Dibujar muro</b><select id="lapizTipo" aria-label="Tipo de muro"><option value="hueco8">Ladrillo hueco 8</option><option value="hueco12">Ladrillo hueco 12</option>${TIPO_MURO.hueco18 ? '<option value="hueco18">Ladrillo hueco 18</option>' : ''}<option value="portante12">Ladrillo portante 12</option></select><span id="lapizAyuda"></span><button type="button" class="btn" id="lapizSalir">Terminar</button>`;
 lienzo.parentElement.append(barraLapiz);
-const pisoFloor = piso => { const n = PISO_MURO[piso], i = nivIdx[n]; return piso === 'PB' ? 0 : NIV[i - 1].z; };
-function empezarLapiz() {
-  if (!nivelSel || !PISO_DE_NIVEL[nivelSel] || hastaAca) { avisoLapiz('Elegí un piso en el corte de niveles (sin “mostrar también los de abajo”) para dibujar sobre él.'); return; }
-  const piso = PISO_DE_NIVEL[nivelSel];
-  enEdicion = null; elegir(null);
-  lapiz = { piso, tipo: $('#lapizTipo').value, z0: pisoFloor(piso), a: null };
-  barraLapiz.hidden = false; $('#botonLapiz').setAttribute('aria-pressed', 'true'); lienzo.style.cursor = 'crosshair'; pintar();
-  $('#lapizAyuda').textContent = `${NIV[nivIdx[nivelSel]].corto}: clic en el inicio`;
+const pisoFloor = piso => { const n = PISO_MURO[piso], i = nivIdx[n]; return piso === 'PB' ? (ALB.pisos && ALB.muros.find(m => m.piso === 'PB' && !m.medianera) ? ALB.muros.find(m => m.piso === 'PB' && !m.medianera).z0 : 0) : NIV[i - 1].z; };
+// Piso de muros cuyo piso (losa de abajo) está más cerca de una cota, sin pasarse para arriba
+function pisoEnCota(z) {
+  let mejor = null;
+  for (const p of Object.keys(PISO_MURO)) { const f = pisoFloor(p); if (f <= z + 0.35 && (!mejor || f > mejor.f)) mejor = { p, f }; }
+  return mejor;
 }
-function terminarLapiz() { const habia = !!lapiz; lapiz = null; if (habia) pintar(); previa.visible = false; marca.visible = false; barraLapiz.hidden = true; etqEdicion.hidden = true; $('#botonLapiz').setAttribute('aria-pressed', 'false'); lienzo.style.cursor = ''; }
+function ponerSilueta(pts, z) {
+  const forma = new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x - OX, y - OY)));
+  const g = new THREE.ShapeGeometry(forma); g.rotateX(-Math.PI / 2); g.translate(0, z + 0.012, 0);
+  silueta.geometry.dispose(); silueta.geometry = g; silueta.visible = true;
+  bordeSilueta.geometry.dispose(); bordeSilueta.geometry = new THREE.BufferGeometry().setFromPoints(pts.map(([x, y]) => v3(x, y, z + 0.014))); bordeSilueta.visible = true;
+}
+function apagarSilueta() { silueta.visible = false; bordeSilueta.visible = false; previa.visible = false; }
+function empezarLapiz() {
+  etqEdicion.hidden = true;
+  if (typeof medir !== 'undefined' && medir) terminarMedir();
+  if (typeof alinear !== 'undefined' && alinear) terminarAlinear();
+  enEdicion = null; elegir(null);
+  // con un piso aislado (aunque se vean también los de abajo: el lápiz muestra ese piso en corte) se dibuja ahí
+  const fijo = nivelSel && PISO_DE_NIVEL[nivelSel] ? PISO_DE_NIVEL[nivelSel] : null;
+  lapiz = { piso: fijo, tipo: $('#lapizTipo').value, z0: fijo ? pisoFloor(fijo) : null, fijo: !!fijo, a: null, tecleo: '' };
+  barraLapiz.hidden = false; $('#botonLapiz').setAttribute('aria-pressed', 'true'); lienzo.style.cursor = 'crosshair'; pintar();
+  ayudaLapiz();
+}
+function ayudaLapiz() {
+  if (!lapiz) return;
+  const piso = lapiz.piso ? NOM_PISO_MURO[lapiz.piso] + ': ' : '';
+  $('#lapizAyuda').textContent = !lapiz.a ? `${piso}clic en el inicio${lapiz.fijo ? '' : ' (dibuja sobre la losa que está bajo el mouse)'}`
+    : `${piso}clic en el final, o tipeá el largo y Enter · Shift: a escuadra · Alt: ángulo libre · Esc: cancelar`;
+}
+window.__lapizNivel = id => { if (!lapiz) return; const a = lapiz.a; lapiz = null; apagarSilueta(); empezarLapiz(); if (a && lapiz && lapiz.piso) { /* se empieza de nuevo en el nivel elegido */ } };
+function terminarLapiz() { const habia = !!lapiz; lapiz = null; if (habia) pintar(); apagarSilueta(); barraLapiz.hidden = true; etqEdicion.hidden = true; $('#botonLapiz').setAttribute('aria-pressed', 'false'); lienzo.style.cursor = ''; }
 function avisoLapiz(t) { etqEdicion.innerHTML = esc(t); etqEdicion.hidden = false; etqEdicion.style.left = '12px'; etqEdicion.style.top = '60px'; setTimeout(() => { if (!lapiz && !arrastre) etqEdicion.hidden = true; }, 3500); }
 $('#lapizTipo').onchange = () => { if (lapiz) lapiz.tipo = $('#lapizTipo').value; };
 $('#lapizSalir').onclick = terminarLapiz;
-// Candidatos de enganche en x y en y para el piso
+// Enganches del piso: caras (x e y por separado, para lo que va a escuadra) y esquinas (puntos)
 function candidatosLapiz(piso, z0, z1, esp) {
-  const cx = [], cy = [];
+  const cx = [], cy = [], pts = [];
   const add = (arr, v, ref, tipo) => arr.push({ v, ref, tipo });
-  for (const b of REFS_EST) { if (b.z1 <= z0 + 0.05 || b.z0 >= z1 - 0.05) continue; for (const [arr, a0, a1] of [[cx, b.x0, b.x1], [cy, b.y0, b.y1]]) { add(arr, a0, b.nombre, 'cara'); add(arr, a1, b.nombre, 'cara'); add(arr, a0 + esp / 2, b.nombre, 'filo'); add(arr, a1 - esp / 2, b.nombre, 'filo'); } }
-  for (const o of ALB.muros) { if (o.piso !== piso) continue; for (const q of o.cajas) for (const [arr, a0, a1] of [[cx, q[0], q[2]], [cy, q[1], q[3]]]) { add(arr, a0, o.nombre, 'cara'); add(arr, a1, o.nombre, 'cara'); add(arr, (a0 + a1) / 2, o.nombre, 'eje'); add(arr, a0 + esp / 2, o.nombre, 'filo'); add(arr, a1 - esp / 2, o.nombre, 'filo'); } }
-  return { cx, cy };
+  for (const b of REFS_EST) {
+    if (b.z1 <= z0 + 0.05 || b.z0 >= z1 - 0.05) continue;
+    for (const [arr, a0, a1] of [[cx, b.x0, b.x1], [cy, b.y0, b.y1]]) { add(arr, a0, b.nombre, 'cara'); add(arr, a1, b.nombre, 'cara'); add(arr, a0 + esp / 2, b.nombre, 'filo'); add(arr, a1 - esp / 2, b.nombre, 'filo'); }
+    for (const x of [b.x0, b.x1]) for (const y of [b.y0, b.y1]) pts.push({ p: [x, y], ref: b.nombre });
+  }
+  for (const o of ALB.muros) {
+    if (o.piso !== piso) continue;
+    for (const q of o.cajas) for (const [arr, a0, a1] of [[cx, q[0], q[2]], [cy, q[1], q[3]]]) { add(arr, a0, o.nombre, 'cara'); add(arr, a1, o.nombre, 'cara'); add(arr, (a0 + a1) / 2, o.nombre, 'eje'); add(arr, a0 + esp / 2, o.nombre, 'filo'); add(arr, a1 - esp / 2, o.nombre, 'filo'); }
+    if (o.eje) { pts.push({ p: o.eje.a, ref: o.nombre + ' (eje)' }, { p: o.eje.b, ref: o.nombre + ' (eje)' }); for (const p of esquinasEje(o)) pts.push({ p, ref: o.nombre }); }
+    else { const b = cajaMuro(o); for (const x of [b.x0, b.x1]) for (const y of [b.y0, b.y1]) pts.push({ p: [x, y], ref: o.nombre }); }
+  }
+  return { cx, cy, pts };
 }
 const masCerca = (arr, v, tol) => { let m = null; for (const c of arr) { const d = Math.abs(c.v - v); if (d <= tol && (!m || d < m.d)) m = { ...c, d }; } return m; };
+const puntoCerca = (arr, p, tol) => { let m = null; for (const c of arr) { const d = Math.hypot(c.p[0] - p[0], c.p[1] - p[1]); if (d <= tol && (!m || d < m.d)) m = { ...c, d }; } return m; };
 function puntoPiso(ev) {
   rayoDesde(ev);
+  // Sin piso fijo y sin primer punto: el piso es el de la losa (o lo que sea) que está bajo el mouse
+  if (!lapiz.fijo && !lapiz.a) {
+    const cand = [...mallas, ...sanMallas].filter(m => { for (let o = m; o; o = o.parent) if (!o.visible) return false; return true; });
+    const hit = ray2.intersectObjects(cand, false).find(h => typeof corte === 'undefined' || !corte || delLado(h.point));
+    if (hit) { const pz = pisoEnCota(hit.point.y); if (pz) { lapiz.piso = pz.p; lapiz.z0 = pz.f; } }
+    if (!lapiz.piso) return null;
+  }
   const p = new THREE.Vector3(); if (!ray2.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -lapiz.z0), p)) return null;
   return [p.x + OX, -p.z + OY];
 }
@@ -1774,40 +1930,75 @@ function techoMuro(r, z0) {
   for (const b of REFS_ARRIBA) if (b.z0 > z0 + 0.3 && Math.min(r[2], b.x1) - Math.max(r[0], b.x0) > 0.01 && Math.min(r[3], b.y1) - Math.max(r[1], b.y0) > 0.01) z = Math.min(z, b.z0);
   return isFinite(z) && z - z0 < 4 ? z : z0 + 2.6;
 }
-let estadoLapiz = null;
+const r2c = v => Math.round(v * 100) / 100;                // al centímetro
+let estadoLapiz = null, ultimoEv = null;
 function moverLapiz(ev) {
-  const p = puntoPiso(ev); if (!p) return;
-  const esp = ESP_TIPO[lapiz.tipo], tol = Math.max(0.05, camara.position.distanceTo(ctrl.target) * 0.012);
+  ultimoEv = { clientX: ev.clientX, clientY: ev.clientY, shiftKey: ev.shiftKey, altKey: ev.altKey };
+  const p = puntoPiso(ev); if (!p) { apagarSilueta(); return; }
+  ayudaLapiz();
+  const esp = ESP_TIPO[lapiz.tipo], tol = Math.max(0.03, camara.position.distanceTo(ctrl.target) * 0.008);
   const C = candidatosLapiz(lapiz.piso, lapiz.z0, lapiz.z0 + 2.5, esp);
   let [x, y] = p, txt = [];
   if (!lapiz.a) {
-    const sx = masCerca(C.cx, x, tol), sy = masCerca(C.cy, y, tol);
-    if (sx) { x = sx.v; txt.push(sx.ref); } if (sy) { y = sy.v; if (!sx || sy.ref !== sx.ref) txt.push(sy.ref); }
-    marca.position.copy(v3(x, y, lapiz.z0 + 0.01)); marca.visible = true; previa.visible = false;
+    const sp = ev.altKey ? null : puntoCerca(C.pts, [x, y], tol);
+    if (sp) { [x, y] = sp.p; txt.push('esquina de ' + sp.ref); }
+    else {
+      const sx = ev.altKey ? null : masCerca(C.cx, x, tol), sy = ev.altKey ? null : masCerca(C.cy, y, tol);
+      if (sx) { x = sx.v; txt.push(sx.ref); } if (sy) { y = sy.v; if (!sx || sy.ref !== sx.ref) txt.push(sy.ref); }
+      if (!sx) x = r2c(x); if (!sy) y = r2c(y);
+    }
+    const h = esp / 2; ponerSilueta([[x - h, y - h], [x + h, y - h], [x + h, y + h], [x - h, y + h]], lapiz.z0); previa.visible = false;
     estadoLapiz = { p: [x, y] };
-    etqEdicion.innerHTML = `Inicio${txt.length ? ' · enganchado a <b>' + txt.map(esc).join(', ') + '</b>' : ''}`;
+    etqEdicion.innerHTML = `Inicio${txt.length ? ' · <b>' + txt.map(esc).join(', ') + '</b>' : ''}`;
   } else {
-    const [ax, ay] = lapiz.a, ej = Math.abs(x - ax) >= Math.abs(y - ay) ? 0 : 1;      // recto: el eje dominante
-    let u = ej ? y : x; const s = masCerca(ej ? C.cy : C.cx, u, tol); if (s) { u = s.v; txt.push(`${s.tipo === 'eje' ? 'eje de' : s.tipo === 'filo' ? 'filo de' : 'contra'} ${s.ref}`); }
-    const a0 = ej ? ay : ax, lo = Math.min(a0, u), hi = Math.max(a0, u);
-    const r = ej ? [ax - esp / 2, lo, ax + esp / 2, hi] : [lo, ay - esp / 2, hi, ay + esp / 2];
+    const [ax, ay] = lapiz.a;
+    let dx = x - ax, dy = y - ay, L = Math.hypot(dx, dy), ang = Math.atan2(dy, dx);
+    // ángulo: Shift a escuadra; si no, engancha a 0/45/90 cerca; Alt libre
+    const paso = Math.PI / 4, cerca = Math.round(ang / paso) * paso;
+    if (ev.shiftKey) ang = Math.round(ang / (Math.PI / 2)) * (Math.PI / 2);
+    else if (!ev.altKey && Math.abs(ang - cerca) < THREE.MathUtils.degToRad(3)) ang = cerca;
+    const recto = Math.abs(Math.sin(2 * ang)) < 1e-9;      // a escuadra
+    let fin = null;
+    if (lapiz.tecleo) { const v = parseFloat(lapiz.tecleo.replace(',', '.')); if (v > 0) L = v; }
+    else if (!ev.altKey) {
+      // esquina cerca del cursor (si la dirección lo permite, queda exacta); si no, cara a escuadra
+      const sp = puntoCerca(C.pts, [x, y], tol);
+      if (sp && !ev.shiftKey) { fin = sp.p; txt.push('esquina de ' + sp.ref); }
+      else if (recto) {
+        const ej = Math.abs(Math.cos(ang)) > 0.5 ? 0 : 1, u0 = ej ? ay : ax;
+        const s = masCerca(ej ? C.cy : C.cx, ej ? ay + Math.sin(ang) * L : ax + Math.cos(ang) * L, tol);
+        if (s) { L = Math.abs(s.v - u0); txt.push(`${s.tipo === 'eje' ? 'eje de' : s.tipo === 'filo' ? 'filo de' : 'contra'} ${s.ref}`); }
+      }
+    }
+    if (fin) { dx = fin[0] - ax; dy = fin[1] - ay; L = Math.hypot(dx, dy); ang = Math.atan2(dy, dx); }
+    if (!fin) L = r2c(L);
+    const bx = ax + Math.cos(ang) * L, by = ay + Math.sin(ang) * L;
+    const m = { eje: { a: [ax, ay], b: [bx, by] }, espDib: esp, tipo: lapiz.tipo };
+    const P = esquinasEje(m), xs = P.map(q => q[0]), ys = P.map(q => q[1]);
+    const r = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
     const z1 = techoMuro(r, lapiz.z0);
-    previa.scale.set(Math.max(r[2] - r[0], 0.01), z1 - lapiz.z0, Math.max(r[3] - r[1], 0.01));
-    previa.position.copy(v3((r[0] + r[2]) / 2, (r[1] + r[3]) / 2, (lapiz.z0 + z1) / 2)); previa.visible = hi - lo > 0.02;
-    marca.position.copy(v3(ej ? ax : u, ej ? u : ay, lapiz.z0 + 0.01)); marca.visible = true;
-    estadoLapiz = { r, z1, largo: hi - lo };
-    etqEdicion.innerHTML = `<b class="num">${fmt(hi - lo, 2)} m</b> · alto ${fmt(z1 - lapiz.z0, 2)} m${txt.length ? ' · ' + txt.map(esc).join(', ') : ''}`;
+    ponerSilueta(P, lapiz.z0);
+    const g = new THREE.ExtrudeGeometry(new THREE.Shape(P.map(([px, py]) => new THREE.Vector2(px - OX, py - OY))), { depth: z1 - lapiz.z0, bevelEnabled: false });
+    g.rotateX(-Math.PI / 2); g.translate(0, lapiz.z0, 0); previa.geometry.dispose(); previa.geometry = g; previa.visible = L > 0.02;
+    estadoLapiz = { a: [ax, ay], b: [bx, by], ang, z1, largo: L, recto: Math.abs(Math.sin(2 * ang)) < 1e-6 };
+    const grados = ((THREE.MathUtils.radToDeg(ang) % 180) + 180) % 180;
+    etqEdicion.innerHTML = `<b class="num">${lapiz.tecleo ? esc(lapiz.tecleo) + '▏' : fmt(L, 2)} m</b> · ${fmt(grados, 1)}° · alto ${fmt(z1 - lapiz.z0, 2)} m${txt.length ? ' · ' + txt.map(esc).join(', ') : ''}`;
   }
   const rc = lienzo.getBoundingClientRect(); etqEdicion.hidden = false;
   etqEdicion.style.left = Math.min(ev.clientX - rc.left + 16, rc.width - etqEdicion.offsetWidth - 8) + 'px'; etqEdicion.style.top = Math.max(8, ev.clientY - rc.top - 34) + 'px';
 }
 function clicLapiz() {
   if (!estadoLapiz) return;
-  if (!lapiz.a) { lapiz.a = estadoLapiz.p; $('#lapizAyuda').textContent = 'clic en el final (Esc: cancelar)'; return; }
-  if (!estadoLapiz.r || estadoLapiz.largo < 0.1) return;
+  if (!lapiz.a) { if (!estadoLapiz.p) return; lapiz.a = estadoLapiz.p; lapiz.tecleo = ''; ayudaLapiz(); return; }
+  if (!estadoLapiz.b || estadoLapiz.largo < 0.05) return;
   const n = ALB.muros.filter(m => m.nuevo).reduce((a, m) => Math.max(a, +m.id.split('-N')[1] || 0), 0) + 1;
-  const id = `${lapiz.piso}-N${n}`;
-  const m = { id, nombre: `M-${id}`, piso: lapiz.piso, tipo: lapiz.tipo, nombreTipo: TIPO_MURO[lapiz.tipo], esp: ESP_TIPO[lapiz.tipo], cajas: [estadoLapiz.r.map(v => +v.toFixed(3))], z0: lapiz.z0, z1: +estadoLapiz.z1.toFixed(3) };
+  const id = `${lapiz.piso}-N${n}`, esp = ESP_TIPO[lapiz.tipo], { a, b } = estadoLapiz;
+  const m = { id, nombre: `M-${id}`, piso: lapiz.piso, tipo: lapiz.tipo, nombreTipo: TIPO_MURO[lapiz.tipo], esp, espDib: esp, z0: lapiz.z0, z1: +estadoLapiz.z1.toFixed(3) };
+  if (estadoLapiz.recto) {
+    // a escuadra: una caja, como siempre
+    const P = esquinasEje({ eje: { a, b }, espDib: esp }), xs = P.map(q => q[0]), ys = P.map(q => q[1]);
+    m.cajas = [[Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)].map(v => +v.toFixed(3))];
+  } else { m.eje = { a: a.map(v => +v.toFixed(4)), b: b.map(v => +v.toFixed(4)) }; m.cajas = cajasDeEje(m); }
   agregarMuroNuevo(m); guardarNuevos();
   { let reponer = null; registrar({ nombre: 'dibujar ' + m.nombre, deshacer: () => { reponer = quitar('muro:' + id); }, rehacer: () => reponer && reponer() }); }
   terminarLapiz(); pintar(); editarMuro('muro:' + id);
@@ -1822,11 +2013,135 @@ lienzo.addEventListener('pointerup', ev => {
   bajoLapiz = null;
 }, { capture: true });
 lienzo.addEventListener('dblclick', ev => { if (lapiz) ev.stopImmediatePropagation(); }, { capture: true });
-addEventListener('keydown', ev => { if (ev.key === 'Escape' && lapiz) { ev.stopImmediatePropagation(); if (lapiz.a) { lapiz.a = null; previa.visible = false; $('#lapizAyuda').textContent = 'clic en el inicio'; } else terminarLapiz(); } }, true);
+addEventListener('keydown', ev => {
+  if (!lapiz) return;
+  if (ev.target.closest && ev.target.closest('input, select, textarea')) return;
+  // largo tipeado con el primer punto puesto: números, coma o punto; Enter lo dibuja; Retroceso borra
+  if (lapiz.a && /^[0-9.,]$/.test(ev.key)) { ev.preventDefault(); ev.stopImmediatePropagation(); lapiz.tecleo += ev.key; if (ultimoEv) moverLapiz(ultimoEv); return; }
+  if (lapiz.a && ev.key === 'Backspace' && lapiz.tecleo) { ev.preventDefault(); ev.stopImmediatePropagation(); lapiz.tecleo = lapiz.tecleo.slice(0, -1); if (ultimoEv) moverLapiz(ultimoEv); return; }
+  if (lapiz.a && ev.key === 'Enter') { ev.preventDefault(); ev.stopImmediatePropagation(); if (ultimoEv) moverLapiz(ultimoEv); clicLapiz(); return; }
+  if (ev.key === 'Escape') {
+    ev.stopImmediatePropagation();
+    if (lapiz.tecleo) { lapiz.tecleo = ''; if (ultimoEv) moverLapiz(ultimoEv); }
+    else if (lapiz.a) { lapiz.a = null; if (!lapiz.fijo) { lapiz.piso = null; } apagarSilueta(); ayudaLapiz(); }
+    else terminarLapiz();
+  }
+}, true);
 { // botón del lápiz, abajo a la derecha junto al del plano de sección
   const b = document.createElement('button'); b.type = 'button'; b.id = 'botonLapiz'; b.setAttribute('aria-pressed', 'false'); b.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4.5L15.5 5a2.1 2.1 0 013 3L8 18.5 4 20z"/><path d="M13.5 7l3 3"/></svg>`; b.title = 'Dibujar muro'; b.setAttribute('aria-label', 'Dibujar muro');
   b.onclick = () => lapiz ? terminarLapiz() : empezarLapiz();
   document.querySelector('.acciones3d').prepend(b);
+}
+
+// ---------- Alinear: una cara de un muro con la cara de otro elemento ----------
+// Primero se toca la cara del muro que se quiere mover y después la cara de referencia (de una columna, una viga,
+// una losa u otro muro), que tiene que ser paralela. Según la cara del muro:
+// - un costado: el muro se corre entero (no cambia su espesor) hasta quedar al ras de la referencia;
+// - una punta: el muro se estira o se acorta hasta la referencia;
+// - arriba o abajo: cambia la altura o el arranque.
+// La cara de referencia se toma exacta de la caja de la pieza tocada (no del punto del clic). Ctrl+Z deshace.
+let alinear = null;          // { paso: 1 | 2, m, eje, lado, valor }
+const matCaraSel = new THREE.MeshBasicMaterial({ color: css('--accent'), transparent: true, opacity: 0.35, depthTest: false, side: THREE.DoubleSide });
+const caraSel = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), matCaraSel); caraSel.visible = false; caraSel.renderOrder = 15; escena.add(caraSel);
+const caraHover = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: 0xf2a900, transparent: true, opacity: 0.35, depthTest: false, side: THREE.DoubleSide })); caraHover.visible = false; caraHover.renderOrder = 15; escena.add(caraHover);
+const barraAlinear = document.createElement('div'); barraAlinear.className = 'flota barra-lapiz'; barraAlinear.hidden = true;
+barraAlinear.innerHTML = `<b>Alinear</b><span id="alinearAyuda"></span><button type="button" class="btn" id="alinearSalir">Terminar</button>`;
+lienzo.parentElement.append(barraAlinear);
+// Caja (en coordenadas del plano y de altura) de lo que se tocó
+function cajaDeObjeto(obj) { const b = new THREE.Box3().setFromObject(obj); return { x0: b.min.x + OX, x1: b.max.x + OX, y0: -b.max.z + OY, y1: -b.min.z + OY, z0: b.min.y, z1: b.max.y }; }
+// Cara tocada: eje (0 = x, 1 = y del plano, 2 = altura), lado (0 = la de menor valor, 1 = la de mayor) y su valor
+function caraTocada(ev, soloMuros) {
+  rayoDesde(ev);
+  const cand = (soloMuros ? MUROS : [...mallas, ...sanMallas]).filter(m => { for (let o = m; o; o = o.parent) if (!o.visible) return false; return true; });
+  const hit = ray2.intersectObjects(cand, false).find(h => typeof corte === 'undefined' || !corte || delLado(h.point)); if (!hit || !hit.face) return null;
+  const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+  const an = [Math.abs(n.x), Math.abs(n.z), Math.abs(n.y)], eje = an.indexOf(Math.max(...an));
+  if (an[eje] < 0.97) return { obj: hit.object, inclinada: true };
+  const signo = eje === 0 ? Math.sign(n.x) : eje === 1 ? -Math.sign(n.z) : Math.sign(n.y), lado = signo > 0 ? 1 : 0;
+  const b = cajaDeObjeto(hit.object), K = ['x', 'y', 'z'][eje];
+  // el valor exacto: la cara de la caja de la pieza si coincide con el punto tocado; si no (piezas con escalones), el punto
+  const pt = eje === 0 ? hit.point.x + OX : eje === 1 ? -hit.point.z + OY : hit.point.y, deCaja = b[K + lado];
+  const valor = Math.abs(deCaja - pt) < 0.02 ? deCaja : pt;
+  return { obj: hit.object, id: hit.object.userData.id, eje, lado, valor, b };
+}
+function mostrarCara(malla, c, color) {
+  const b = c.b, cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2, cz = (b.z0 + b.z1) / 2;
+  if (c.eje === 0) { malla.scale.set(b.y1 - b.y0, b.z1 - b.z0, 1); malla.rotation.set(0, Math.PI / 2, 0); malla.position.copy(v3(c.valor, cy, cz)); }
+  else if (c.eje === 1) { malla.scale.set(b.x1 - b.x0, b.z1 - b.z0, 1); malla.rotation.set(0, 0, 0); malla.position.copy(v3(cx, c.valor, cz)); }
+  else { malla.scale.set(b.x1 - b.x0, b.y1 - b.y0, 1); malla.rotation.set(-Math.PI / 2, 0, 0); malla.position.copy(v3(cx, cy, c.valor)); }
+  malla.visible = true;
+}
+function empezarAlinear() {
+  if (lapiz) terminarLapiz(); if (typeof medir !== 'undefined' && medir) terminarMedir();
+  enEdicion = null; elegir(null);
+  alinear = { paso: 1 }; barraAlinear.hidden = false; $('#botonAlinear').setAttribute('aria-pressed', 'true'); lienzo.style.cursor = 'crosshair';
+  $('#alinearAyuda').textContent = 'Tocá la cara del muro que querés mover';
+}
+function terminarAlinear() { alinear = null; caraSel.visible = false; caraHover.visible = false; barraAlinear.hidden = true; etqEdicion.hidden = true; $('#botonAlinear').setAttribute('aria-pressed', 'false'); lienzo.style.cursor = ''; }
+$('#alinearSalir').onclick = terminarAlinear;
+function aplicarAlinear(m, c, valor) {
+  const antes = estadoMuro(m), b = cajaMuro(m), largoX = (b.x1 - b.x0) >= (b.y1 - b.y0), ejLargo = largoX ? 0 : 1;
+  let que;
+  if (c.eje === 2) { if (c.lado) { if (valor <= m.z0 + 0.05) return 'La referencia queda debajo del arranque del muro'; m.z1 = +valor.toFixed(3); } else { if (valor >= m.z1 - 0.05) return 'La referencia queda arriba del borde del muro'; m.z0 = +valor.toFixed(3); } que = c.lado ? 'altura' : 'arranque'; }
+  else if (c.eje === ejLargo && !m.eje) {
+    // punta: se estira o se acorta la caja que llega a esa punta
+    const k = c.eje, lim = c.lado ? 'max' : 'min', extremo = Math[lim](...m.cajas.map(r => r[k + c.lado * 2]));
+    for (const r of m.cajas) if (Math.abs(r[k + c.lado * 2] - extremo) < 1e-4) r[k + c.lado * 2] = +valor.toFixed(3);
+    if (m.cajas.some(r => r[k + 2] - r[k] < 0.05)) { ponerEstadoMuro(m, antes); return 'El muro quedaría demasiado corto'; }
+    que = 'largo';
+  } else {
+    // costado (o cualquier cara de un muro en diagonal que sea paralela): se corre el muro entero
+    const K = ['x', 'y'][c.eje], actual = c.lado ? b[K + '1'] : b[K + '0'], d = valor - actual;
+    m.cajas = m.cajas.map(r => { const q = r.slice(); q[c.eje] = +(q[c.eje] + d).toFixed(4); q[c.eje + 2] = +(q[c.eje + 2] + d).toFixed(4); return q; });
+    if (m.eje) m.eje = { a: m.eje.a.map((v, i) => i === c.eje ? +(v + d).toFixed(4) : v), b: m.eje.b.map((v, i) => i === c.eje ? +(v + d).toFixed(4) : v) };
+    que = 'posición';
+  }
+  recalcularMuro(m); rehacerMuro(m); delete m._est; guardarEdicion(m);
+  const despues = estadoMuro(m);
+  if (!mismoEstado(antes, despues)) registrar({ nombre: 'alinear ' + m.nombre, deshacer: () => ponerEstadoMuro(m, antes), rehacer: () => ponerEstadoMuro(m, despues) });
+  refrescarKpis(); refrescarElementos(); refrescarResumen(); if (pestana === 'albanileria') refrescarAlbanileria();
+  return null;
+}
+let bajoAlinear = null;
+lienzo.addEventListener('pointerdown', ev => { if (alinear) bajoAlinear = [ev.clientX, ev.clientY]; }, { capture: true });
+lienzo.addEventListener('pointermove', ev => {
+  if (!alinear || ev.buttons) return; ev.stopImmediatePropagation(); tip.hidden = true;
+  const c = caraTocada(ev, alinear.paso === 1);
+  if (!c || c.inclinada || (alinear.paso === 2 && (c.eje !== alinear.cara.eje || c.id === alinear.cara.id))) { caraHover.visible = false; return; }
+  mostrarCara(caraHover, c);
+}, { capture: true });
+lienzo.addEventListener('pointerup', ev => {
+  if (!alinear) return;
+  if (!bajoAlinear || Math.hypot(ev.clientX - bajoAlinear[0], ev.clientY - bajoAlinear[1]) > 5) { bajoAlinear = null; return; }
+  bajoAlinear = null; ev.stopImmediatePropagation(); abajo = null;
+  const c = caraTocada(ev, alinear.paso === 1);
+  if (alinear.paso === 1) {
+    if (!c || !c.id || !c.id.startsWith('muro:')) { $('#alinearAyuda').textContent = 'Tocá una cara de un muro'; return; }
+    if (c.inclinada) { $('#alinearAyuda').textContent = 'Esa cara está inclinada: tocá una cara a escuadra del muro'; return; }
+    alinear = { paso: 2, cara: c, m: muroPorId[c.id.slice(5)] }; caraHover.visible = false; mostrarCara(caraSel, c);
+    $('#alinearAyuda').textContent = `${c.eje === 2 ? (c.lado ? 'Cara de arriba' : 'Cara de abajo') : 'Cara'} de ${alinear.m.nombre}: ahora tocá la cara de referencia (paralela) · Esc: elegir otra`;
+    return;
+  }
+  if (!c || c.inclinada) { $('#alinearAyuda').textContent = 'Tocá una cara de referencia a escuadra'; return; }
+  if (c.eje !== alinear.cara.eje) { $('#alinearAyuda').textContent = 'Esa cara no es paralela a la del muro: tocá otra'; return; }
+  const m = alinear.m, err = aplicarAlinear(m, alinear.cara, c.valor);
+  if (err) { $('#alinearAyuda').textContent = err; return; }
+  avisoBreve(`${m.nombre} alineado con ${nombreDe(c.id) || 'la referencia'}`);
+  alinear = { paso: 1 }; caraSel.visible = false; caraHover.visible = false; pintar();
+  $('#alinearAyuda').textContent = 'Listo. Tocá otra cara de un muro para seguir alineando';
+}, { capture: true });
+lienzo.addEventListener('dblclick', ev => { if (alinear) ev.stopImmediatePropagation(); }, { capture: true });
+addEventListener('keydown', ev => {
+  if (!alinear || ev.key !== 'Escape') return; ev.stopImmediatePropagation();
+  if (alinear.paso === 2) { alinear = { paso: 1 }; caraSel.visible = false; $('#alinearAyuda').textContent = 'Tocá la cara del muro que querés mover'; } else terminarAlinear();
+}, true);
+{ // botón de alinear, junto al lápiz
+  const b = document.createElement('button'); b.type = 'button'; b.id = 'botonAlinear'; b.setAttribute('aria-pressed', 'false');
+  b.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3v18"/><rect x="7" y="5" width="11" height="5" rx="1"/><rect x="7" y="14" width="7" height="5" rx="1"/></svg>`;
+  b.title = 'Alinear una cara de un muro con otra'; b.setAttribute('aria-label', 'Alinear');
+  b.onclick = () => alinear ? terminarAlinear() : empezarAlinear();
+  $('#botonLapiz').after(b);
+  $('#botonLapiz').addEventListener('click', () => { if (alinear) terminarAlinear(); }, true);
 }
 
 // ---------- Eliminar elementos, deshacer (Ctrl+Z) y rehacer (Ctrl+Y) ----------
@@ -1848,9 +2163,9 @@ function refrescarTodo() {
 }
 function deshacer() { const a = historial.pop(); if (!a) { avisoBreve('No hay nada para deshacer'); return; } a.deshacer(); rehechos.push(a); refrescarTodo(); avisoBreve('Deshecho: ' + a.nombre); }
 function rehacer() { const a = rehechos.pop(); if (!a) { avisoBreve('No hay nada para rehacer'); return; } a.rehacer(); historial.push(a); refrescarTodo(); avisoBreve('Rehecho: ' + a.nombre); }
-const estadoMuro = m => ({ cajas: m.cajas.map(r => r.slice()), z0: m.z0, z1: m.z1 });
-const mismoEstado = (a, b) => a.z0 === b.z0 && a.z1 === b.z1 && a.cajas.length === b.cajas.length && a.cajas.every((r, i) => r.every((v, j) => Math.abs(v - b.cajas[i][j]) < 1e-5));
-function ponerEstadoMuro(m, s) { m.cajas = s.cajas.map(r => r.slice()); m.z1 = s.z1; if (s.z0 != null) m.z0 = s.z0; recalcularMuro(m); rehacerMuro(m); guardarEdicion(m); ponerFlechas(); }
+const estadoMuro = m => ({ cajas: m.cajas.map(r => r.slice()), z0: m.z0, z1: m.z1, eje: m.eje ? { a: m.eje.a.slice(), b: m.eje.b.slice() } : null });
+const mismoEstado = (a, b) => JSON.stringify(a.eje) === JSON.stringify(b.eje) && a.z0 === b.z0 && a.z1 === b.z1 && a.cajas.length === b.cajas.length && a.cajas.every((r, i) => r.every((v, j) => Math.abs(v - b.cajas[i][j]) < 1e-5));
+function ponerEstadoMuro(m, s) { m.cajas = s.cajas.map(r => r.slice()); if (s.eje) m.eje = { a: s.eje.a.slice(), b: s.eje.b.slice() }; m.z1 = s.z1; if (s.z0 != null) m.z0 = s.z0; recalcularMuro(m); rehacerMuro(m); guardarEdicion(m); ponerFlechas(); }
 function nombreDe(id) {
   const s = SANP[id]; if (s) return s.k === 'muro' ? s.o.nombre : s.k === 'tramo' ? `Ø${Math.round(s.o.d * 1000)} ${SAN.sistemas[s.o.sis]}` : s.k === 'artefacto' ? NOM_ART[s.o.tipo] : id;
   return porId[id] ? porId[id].n : id;
@@ -1912,7 +2227,8 @@ function moverMuro(ev) {
     if (bx) { dx += bx.d; refX = bx.ref; txt.push(`x alineado con <b>${esc(bx.ref.nombre)}</b>`); }
     if (by) { dy += by.d; refY = by.ref; txt.push(`y alineado con <b>${esc(by.ref.nombre)}</b>`); }
   }
-  m.cajas = cajas0.map(r => [r[0] + dx, r[1] + dy, r[2] + dx, r[3] + dy].map(v => +v.toFixed(3)));
+  m.cajas = cajas0.map(r => [r[0] + dx, r[1] + dy, r[2] + dx, r[3] + dy].map(v => +v.toFixed(4)));
+  if (arrastre.antes.eje) m.eje = { a: [arrastre.antes.eje.a[0] + dx, arrastre.antes.eje.a[1] + dy], b: [arrastre.antes.eje.b[0] + dx, arrastre.antes.eje.b[1] + dy] };
   rehacerMuro(m); ponerFlechas();
   const ref = refX || refY;
   if (ref) { cajaRef.box.set(v3(ref.x0, ref.y1, ref.z0), v3(ref.x1, ref.y0, ref.z1)); cajaRef.visible = true; } else cajaRef.visible = false;
@@ -1938,6 +2254,71 @@ function ponerCorrimiento(e, d) {
   if (d && (Math.abs(dx) > 1e-4 || Math.abs(dy) > 1e-4)) movidos[e.id] = [+dx.toFixed(3), +dy.toFixed(3)]; else delete movidos[e.id];
 }
 for (const [id, d] of Object.entries(movidos)) if (porId[id]) ponerCorrimiento(porId[id], d);
+// ---------- Editar medidas desde la ficha ----------
+// Los campos de la ficha (input.ed-medida) cambian la pieza al confirmar (Enter o al salir del campo).
+// Estructura: alto o largo según EDITABLE (ver aplicarMedidasEl). Muros: largo (desde el arranque del muro, sobre su
+// eje largo), alto (sube o baja el borde de arriba) y cota de arranque (el borde de abajo). Todo se deshace con Ctrl+Z.
+const campoMedida = (valor, attrs, etiqueta) => `<input class="ed-medida" type="number" inputmode="decimal" step="0.01" value="${(+valor).toFixed(2)}" ${attrs} aria-label="${esc(etiqueta)}"><small> m</small>`;
+if (Object.keys(medidasEditadas).length) recalcularNetos();
+function despuesDeEditarEl(e) {
+  const c = cajaPlano(e.v); e.caja0 = c;
+  const g = e.malla.geometry; g.computeBoundingBox(); e.centro0 = g.boundingBox.getCenter(new THREE.Vector3()); e.centro.copy(e.centro0).add(e.malla.position);
+  const ref = REF_DE.get(e.id), d = movidos[e.id] || [0, 0]; if (ref) Object.assign(ref, { x0: c.x0 + d[0], x1: c.x1 + d[0], y0: c.y0 + d[1], y1: c.y1 + d[1], z0: c.z0, z1: c.z1 });
+  const it = EST_MURO.find(x => x.e === e); if (it) { it.b = cajaPlano(e.v); it.T = null; }
+  for (const m of ALB.muros) delete m._est;                       // los muros vuelven a medir lo que les ocupa la estructura
+  recalcularNetos(); pintar(); refrescarKpis(); refrescarComputo(); refrescarElementos(); refrescarResumen();
+  if (pestana === 'albanileria') refrescarAlbanileria();
+}
+function ponerMedidaEl(e, campo, valor) {
+  const ed = medidasEditadas[e.id] ||= {};
+  const orig = medidaDe(e, campo, e.v0 || e.v);
+  if (valor == null || Math.abs(valor - orig) < 0.0005) delete ed[campo]; else ed[campo] = +valor.toFixed(3);
+  if (!Object.keys(ed).length) delete medidasEditadas[e.id];
+  guardar('medidasEditadas', medidasEditadas);
+  aplicarMedidasEl(e); despuesDeEditarEl(e);
+}
+function editarMedidaEl(e, campo, valor) {
+  const antes = (medidasEditadas[e.id] || {})[campo] ?? null;
+  ponerMedidaEl(e, campo, valor);
+  const despues = (medidasEditadas[e.id] || {})[campo] ?? null;
+  registrar({ nombre: `${campo === 'alto' ? (e.t === 'losa' ? 'espesor' : 'alto') : 'largo'} de ${e.n}`, deshacer: () => ponerMedidaEl(e, campo, antes), rehacer: () => ponerMedidaEl(e, campo, despues) });
+}
+function restablecerMedidasEl(e) {
+  const antes = { ...(medidasEditadas[e.id] || {}) };
+  delete medidasEditadas[e.id]; guardar('medidasEditadas', medidasEditadas); aplicarMedidasEl(e); despuesDeEditarEl(e);
+  registrar({ nombre: 'volver al original ' + e.n, deshacer: () => { medidasEditadas[e.id] = { ...antes }; guardar('medidasEditadas', medidasEditadas); aplicarMedidasEl(e); despuesDeEditarEl(e); }, rehacer: () => restablecerMedidasEl(e) });
+}
+// Muros
+function editarMedidaMuro(m, campo, valor) {
+  const antes = estadoMuro(m);
+  if (campo === 'alto') m.z1 = +(m.z0 + Math.max(0.1, valor)).toFixed(3);
+  else if (campo === 'z0') m.z0 = +Math.min(valor, m.z1 - 0.1).toFixed(3);
+  else if (m.eje) {
+    const [ax, ay] = m.eje.a, L = Math.hypot(m.eje.b[0] - ax, m.eje.b[1] - ay) || 1, f = Math.max(0.05, valor) / L;
+    m.eje = { a: m.eje.a.slice(), b: [+(ax + (m.eje.b[0] - ax) * f).toFixed(4), +(ay + (m.eje.b[1] - ay) * f).toFixed(4)] }; m.cajas = cajasDeEje(m);
+  } else {
+    // largo: el muro arranca donde arranca y termina en arranque + largo, sobre su eje largo
+    const b = cajaMuro(m), ej = (b.x1 - b.x0) >= (b.y1 - b.y0) ? 0 : 1, ini = ej ? b.y0 : b.x0, fin = ini + Math.max(0.05, valor);
+    const cajas = m.cajas.filter(r => r[ej] < fin - 1e-4).map(r => { const n = r.slice(); n[ej + 2] = Math.min(n[ej + 2], fin); return n; });
+    const ult = cajas.reduce((a, r) => !a || r[ej + 2] > a[ej + 2] ? r : a, null); if (ult && ult[ej + 2] < fin) ult[ej + 2] = fin;
+    m.cajas = cajas.map(r => r.map(x => +x.toFixed(3)));
+  }
+  recalcularMuro(m); rehacerMuro(m); delete m._est; guardarEdicion(m); ponerFlechas();
+  const despues = estadoMuro(m);
+  if (!mismoEstado(antes, despues)) registrar({ nombre: 'modificar ' + m.nombre, deshacer: () => ponerEstadoMuro(m, antes), rehacer: () => ponerEstadoMuro(m, despues) });
+  refrescarKpis(); refrescarElementos(); refrescarResumen(); if (pestana === 'albanileria') refrescarAlbanileria();
+}
+document.addEventListener('change', ev => {
+  const c = ev.target.closest('.ed-medida'); if (!c) return;
+  const valor = parseFloat(String(c.value).replace(',', '.')); if (!isFinite(valor)) { refrescarResumen(); return; }
+  if (c.dataset.muro) { const m = muroPorId[c.dataset.muro]; if (m) editarMedidaMuro(m, c.dataset.campo, valor); return; }
+  const e = porId[c.dataset.el]; if (!e || !(valor > 0.02)) { refrescarResumen(); return; }
+  editarMedidaEl(e, c.dataset.campo, valor);
+});
+// Enter confirma; Esc vuelve al valor de antes. Las teclas no llegan a los atajos del modelo mientras se escribe.
+document.addEventListener('keydown', ev => { const c = ev.target.closest && ev.target.closest('.ed-medida'); if (!c) return; ev.stopPropagation(); if (ev.key === 'Enter') c.blur(); else if (ev.key === 'Escape') refrescarResumen(); }, true);
+document.addEventListener('click', ev => { const b = ev.target.closest('[data-restablecer-el]'); if (b && porId[b.dataset.restablecerEl]) restablecerMedidasEl(porId[b.dataset.restablecerEl]); });
+
 const movible = id => !!id && enEdicion === id && ((id.startsWith('muro:') && muroPorId[id.slice(5)]) || (porId[id] && EL.includes(porId[id])));
 const cajaMuro = m => ({ x0: Math.min(...m.cajas.map(r => r[0])), x1: Math.max(...m.cajas.map(r => r[2])), y0: Math.min(...m.cajas.map(r => r[1])), y1: Math.max(...m.cajas.map(r => r[3])), z0: m.z0, z1: m.z1 });
 const cajasDeMuros = (filtro) => ALB.muros.filter(filtro).flatMap(o => o.cajas.map(q => ({ nombre: o.nombre, tipo: 'Muro', x0: q[0], x1: q[2], y0: q[1], y1: q[3], z0: o.z0, z1: o.z1 })));
@@ -1990,7 +2371,7 @@ lienzo.addEventListener('pointermove', ev => {
     if (bx) { dx += bx.d; ref = bx.ref; txt.push(`x alineado con <b>${esc(bx.ref.nombre)}</b>`); }
     if (by) { dy += by.d; ref = ref || by.ref; txt.push(`y alineado con <b>${esc(by.ref.nombre)}</b>`); }
   }
-  if (a.m) { a.m.cajas = a.cajas0.map(r => [r[0] + dx, r[1] + dy, r[2] + dx, r[3] + dy].map(v => +v.toFixed(3))); rehacerMuro(a.m); }
+  if (a.m) { a.m.cajas = a.cajas0.map(r => [r[0] + dx, r[1] + dy, r[2] + dx, r[3] + dy].map(v => +v.toFixed(4))); if (a.antes && a.antes.eje) a.m.eje = { a: [a.antes.eje.a[0] + dx, a.antes.eje.a[1] + dy], b: [a.antes.eje.b[0] + dx, a.antes.eje.b[1] + dy] }; rehacerMuro(a.m); }
   else ponerCorrimiento(a.e, [a.d0[0] + dx, a.d0[1] + dy]);
   a.dx = dx; a.dy = dy;
   if (ref) { cajaRef.box.set(v3(ref.x0, ref.y1, ref.z0), v3(ref.x1, ref.y0, ref.z1)); cajaRef.visible = true; } else cajaRef.visible = false;
@@ -2263,7 +2644,7 @@ function tipSan(id) {
   if (s.k === 'tramo') { const t = s.o; return `<b>Ø${Math.round(t.d * 1000)}</b>${esc(SAN.sistemas[t.sis])} · ${esc(NOM_PISO[t.piso])} · ${esc(NOM_MODO[t.modo])}${t.num ? ' · ' + PREF_BAJADA[t.sis] + ' ' + t.num : ''} · <span class="num">${fmt(t.largo, 2)} m</span>`; }
   if (s.k === 'union') { const u = s.o; return `<b>${NOM_PIEZA[u.tipo]} Ø${Math.round(u.d * 1000)}${u.tipo === 'ramal' ? ' × Ø' + Math.round(u.dr * 1000) : ''}</b>${esc(SAN.sistemas[u.sis])}`; }
   if (s.k === 'pieza') return `<b>${NOM_PIEZA[s.o.tipo]}</b>${esc(NOM_PISO[s.o.piso])}`;
-  if (s.k === 'muro') { const m = s.o; return `<b>${m.nombre}</b>${TIPO_MURO[m.tipo]} · ${NOM_PISO_MURO[m.piso]} · ${fmt(m.largo, 2)} × ${fmt(m.alto, 2)} m · <span class="num">${fmt(m.sup, 2)} m²</span>`; }
+  if (s.k === 'muro') { const m = s.o; return `<b>${m.nombre}</b>${m.dintel ? 'Dintel · ' : ''}${TIPO_MURO[m.tipo]} · ${NOM_PISO_MURO[m.piso]} · ${fmt(m.largo, 2)} × ${fmt(m.alto, 2)} m · <span class="num">${fmt(m.sup, 2)} m²</span>`; }
   if (s.k === 'artefacto') { const a = s.o; return `<b>${NOM_ART[a.tipo]}</b>${esc(NOM_PISO[a.piso])}${a.sinDescarga ? ' · sin descarga ubicada' : ` · descarga Ø${Math.round(a.d * 1000)} a ${esc(SAN.sistemas[a.sis])}`}`; }
   if (s.k === 'pase') { const q = s.o; return `<b>Falta pase Ø${Math.round(q.d * 1000)}</b>no está en la lámina del ingeniero · ${esc(NOM_ORIGEN[q.origen] || q.origen)}`; }
   const k = s.o; return `<b>Cruce con ${esc(k.viga)}</b>${esc(SAN.sistemas[k.sis])} Ø${Math.round(k.d * 1000)} · viga de ${fmt(k.alto * 100, 0)} cm de alto`;
@@ -2285,7 +2666,7 @@ function fichaSan(id) {
     if (s.o.tipo === 'ppa') med.push(['Bocas', String((s.o.entradas || []).length + 1)]);
   } else if (s.k === 'muro') {
     const m = s.o; let extraMuro = ''; titulo = m.nombre; sub = `${TIPO_MURO[m.tipo]} · ${NOM_PISO_MURO[m.piso]}`; color = `var(--a-${m.tipo})`;
-    { const ed = espMuro(m); med = [['Espesor', fmt(m.esp * 100, 0) + ' cm' + (Math.abs(ed - m.esp) >= 0.015 ? ` · dibujado ${fmt(ed * 100, 0)}` : '')], ['Largo', fmt(m.largo, 2) + ' m'], ['Alto', fmt(m.alto, 2) + ' m'], ['Superficie', fmt(netoMuro(m).sup, 2) + ' m²'], ['Volumen', fmt(netoMuro(m).vol, 3) + ' m³'], ['Ladrillos', fmt(ladrillosDe({ ...m, sup: netoMuro(m).sup }), 0)]]; }
+    { const ed = espMuro(m); med = [['Espesor', fmt(m.esp * 100, 0) + ' cm' + (Math.abs(ed - m.esp) >= 0.015 ? ` · dibujado ${fmt(ed * 100, 0)}` : '')], ['Largo', { html: campoMedida(m.largo, `data-muro="${m.id}" data-campo="largo"`, 'Largo de ' + m.nombre) }], ['Alto', { html: campoMedida(m.alto, `data-muro="${m.id}" data-campo="alto"`, 'Alto de ' + m.nombre) }], ['Arranque', { html: campoMedida(m.z0, `data-muro="${m.id}" data-campo="z0"`, 'Cota de arranque de ' + m.nombre) }], ['Superficie', fmt(netoMuro(m).sup, 2) + ' m²'], ['Volumen', fmt(netoMuro(m).vol, 3) + ' m³'], ['Ladrillos', fmt(ladrillosDe({ ...m, sup: netoMuro(m).sup }), 0)]]; }
     { const n = netoMuro(m); if (n.desc > 0.005) { med.push(['Sup. bruta', fmt(m.sup, 2) + ' m²']);
       extraMuro = `<div class="comparar"><span>Descuenta <b>${fmt(n.desc, 2)} m²</b> que ocupa${n.est.length + n.mur.length > 1 ? 'n' : ''} ${[...n.est, ...n.mur].map(x => `${esc(x.con)} (${fmt(x.sup, 2)})`).join(', ')}: ahí no hay mampostería${n.mur.length ? ' o ya se cuenta en el otro muro' : ''}.</span></div>`; } }
     extra = extraMuro + `<div class="comparar"><span>${enEdicion === 'muro:' + m.id ? '<b>Editando:</b> arrastrá las flechas de las puntas (largo), la de arriba o la de abajo (altura y arranque) o las de los costados (corren el muro sin cambiar su espesor); o agarrá el muro para moverlo; se engancha con columnas, vigas, losas y otros muros. Shift: mover en una sola dirección. Alt: sin enganche. Esc: terminar. Ctrl+Z deshace.' : 'Doble clic sobre el muro para editar su largo y su altura.'}</span>${m.sinLosa ? `<span>Sin losa arriba: se tomó una altura de ${fmt(m.alto, 2)} m (muro de azotea).</span>` : ''}${m.nuevo ? `<span class="dif">Muro agregado en el tablero (no está en el CAD).</span>` : ''}${editado(m) && !m.nuevo ? `<span class="dif">Modificado (original: ${fmt(largoOriginal(m), 2)} m de largo × ${fmt(m.z1Orig - m.z0, 2)} m de alto).</span><button type="button" class="btn" data-restablecer-muro="${m.id}" style="justify-self:start;margin-top:4px">Volver al original</button>` : ''}</div>`;
@@ -2304,7 +2685,7 @@ function fichaSan(id) {
   }
   return `<div class="ficha"><div class="ficha-cab"><span class="sw" style="width:14px;height:14px;background:${color}"></span>
     <div><h3>${esc(titulo)}</h3><div class="tipo">${esc(sub)}</div></div><button class="cerrar" type="button" id="cerrarFicha">Cerrar ✕</button></div>
-    <div class="medidas">${med.map(([k, v]) => `<div><span>${k}</span><b style="font-family:var(--f-body);font-size:13.5px">${esc(v)}</b></div>`).join('')}</div>${['muro', 'tramo', 'artefacto'].includes(s.k) ? `<div>${casillaHecho(id)}</div>` : ''}${extra}</div>`;
+    <div class="medidas">${med.map(([k, v]) => `<div><span>${k}</span><b style="font-family:var(--f-body);font-size:13.5px">${v && v.html ? v.html : esc(v)}</b></div>`).join('')}</div>${['muro', 'tramo', 'artefacto'].includes(s.k) ? `<div>${casillaHecho(id)}</div>` : ''}${extra}</div>`;
 }
 // Chips de la instalación en la barra de tipos
 {
@@ -2324,7 +2705,7 @@ function refrescarSanitaria() {
   const losas = [...new Set(P.map(q => q.losa))];
   const met = {}; Object.values(SANP).filter(s => s.k === 'tramo' && cuentaSan(s)).forEach(s => { const t = s.o, k = t.sis + '|' + Math.round(t.d * 1000); met[k] = (met[k] || 0) + t.largo * fSan(s); });
   const totM = Object.values(met).reduce((a, b) => a + b, 0);
-  let h = `<section><h2>Resumen <small>cloacal y pluvial · RICH_INS_CLO.dxf${marcaVisible()}</small></h2>
+  let h = `<section><h2>Resumen <small>cloacal y pluvial · ${esc(archivoDe('san') || archivoDe('es') || 'CAD de instalaciones')}${marcaVisible()}</small></h2>
     <div class="medidas" style="grid-template-columns:repeat(4,minmax(0,1fr))">
       <div><span>Cañería</span><b>${fmt(totM, 0)} m</b></div>
       <div><span>Pases OK</span><b>${P.length - faltan.length}/${P.length}</b></div>
@@ -2447,7 +2828,7 @@ const RUBROS = [['estructura', 'Estructura H°A', 'm³'], ['albanileria', 'Alba�
 function itemsObra() {
   const it = [];
   for (const e of EL) it.push({ id: e.id, rubro: 'estructura', nivel: e.l, nombre: e.n, tipo: NOM_TIPO[e.t], det: e.s || '', cant: e.vol, un: 'm³', color: `var(--s-${e.t})` });
-  for (const m of ALB.muros) it.push({ id: 'muro:' + m.id, rubro: 'albanileria', nivel: PISO_MURO[m.piso], nombre: m.nombre, tipo: TIPO_MURO[m.tipo].replace('Ladrillo ', ''), det: `${fmt(m.largo, 2)} × ${fmt(m.alto, 2)} m`, cant: netoMuro(m).sup, un: 'm²', color: `var(--a-${m.tipo})` });
+  for (const m of ALB.muros) it.push({ id: 'muro:' + m.id, rubro: 'albanileria', nivel: PISO_MURO[m.piso], nombre: m.nombre, tipo: TIPO_MURO[m.tipo].replace('Ladrillo ', ''), det: m.dintel ? `dintel de puerta de ${fmt(m.vano, 2)} m · ${fmt(m.alto, 2)} m de alto` : `${fmt(m.largo, 2)} × ${fmt(m.alto, 2)} m`, cant: netoMuro(m).sup, un: 'm²', color: `var(--a-${m.tipo})` });
   for (const [id, s] of Object.entries(SANP)) {
     if (s.k === 'tramo') { const t = s.o; it.push({ id, rubro: 'sanitaria', nivel: s.nivel, nombre: `Ø${Math.round(t.d * 1000)} ${SAN.sistemas[t.sis]}`, tipo: NOM_MODO[t.modo], det: t.num ? `${PREF_BAJADA[t.sis]} ${t.num}` : '', cant: t.largo, un: 'm', color: `var(--i-${t.sis})` }); }
     else if (s.k === 'artefacto') it.push({ id, rubro: 'sanitaria', nivel: s.nivel, nombre: NOM_ART[s.o.tipo], tipo: 'Artefacto', det: '', cant: 0, un: 'u', color: 'var(--fg2)' });
@@ -2955,6 +3336,7 @@ function clicMedir() {
 function borrarMedidas() { for (const m of medidas) { escenaMedir.remove(m.linea, m.pa, m.pb); m.linea.geometry.dispose(); m.etq.remove(); } medidas.length = 0; }
 function empezarMedir() {
   if (typeof lapiz !== 'undefined' && lapiz) terminarLapiz();
+  if (typeof alinear !== 'undefined' && alinear) terminarAlinear();
   salirEdicion(); menuCtx.hidden = true;
   medir = { a: null }; barraMedir.hidden = false; $('#botonMedir').setAttribute('aria-pressed', 'true'); lienzo.style.cursor = 'crosshair';
   $('#medirAyuda').textContent = 'Clic en el primer punto';

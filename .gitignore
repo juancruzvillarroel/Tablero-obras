@@ -14,6 +14,7 @@ respaldo/
 dxf.json
 skp.json
 alb/muros.json
+lib/alb/muros.json
 skp/previo*/
 *.scr
 log.txt

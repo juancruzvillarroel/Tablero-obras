@@ -31,13 +31,15 @@ const OBRAS = {
     },
     cadena: [['hab', 'extraer.js'], ['hab', 'pases.js']],
     salidas: ['hab/skp.json', 'hab/tablero-datos.json', 'hab/modelo.skp', 'hab/HAB_ES.dwg', 'hab/HAB_ES.dxf', 'hab/dxf.json', 'hab/sanitaria.json'],
-  },  // Libertador 3174: por ahora solo el SketchUp de estructura (los pases de losa vienen dibujados en el modelo).
+  },  // Libertador 3174: SketchUp de estructura (los pases de losa vienen dibujados en el modelo) y CAD de albañilería,
+  // donde cada polilínea es un muro (lib/alb/armar-muros.js). Los muros toman la altura de la estructura.
   libertador: {
     procesos: {
       skp: { tipo: 'skp', carpeta: 'lib', copia: 'lib/modelo.skp' },
+      alb: { tipo: 'dwg', copia: 'lib/alb/muros.dwg', dxf: 'lib/alb/muros.dxf', leer: [['lib/alb', 'inspeccion.js']] },
     },
-    cadena: [['lib', 'extraer.js']],
-    salidas: ['lib/skp.json', 'lib/tablero-datos.json', 'lib/modelo.skp'],
+    cadena: [['lib', 'extraer.js'], ['lib/alb', 'armar-muros.js']],
+    salidas: ['lib/skp.json', 'lib/tablero-datos.json', 'lib/modelo.skp', 'lib/alb/muros.dwg', 'lib/alb/muros.dxf', 'lib/alb/muros.json', 'lib/alb/albanileria.json'],
   },  // Condarco 3187: por ahora solo el SketchUp de estructura.
   condarco: {
     procesos: {
@@ -149,7 +151,7 @@ async function actualizar(id, indice, avisar = () => {}) {
 // lo carga (y reemplaza al anterior de ese tipo); si no, queda en la lista como pendiente de procesar.
 const ROLES = id => ({ skp: 'Modelo de estructura', es: id === 'habana' ? 'Plano de estructura y pases en losa' : 'Plano de estructura del ingeniero', san: 'Instalación sanitaria', alb: 'Albañilería' });
 // Qué dato de la obra sale de cada archivo (se apaga al quitarlo y se vuelve a prender al agregarlo)
-const DATOS = { argerich: { san: ['san', 'san/sanitaria.json'], alb: ['alb', 'alb/albanileria.json'] }, habana: { es: ['san', 'hab/sanitaria.json'] } };
+const DATOS = { argerich: { san: ['san', 'san/sanitaria.json'], alb: ['alb', 'alb/albanileria.json'] }, habana: { es: ['san', 'hab/sanitaria.json'] }, libertador: { alb: ['alb', 'lib/alb/albanileria.json'] } };
 function motivoNoQuitar(id, a) {
   if (a.pendiente) return null;
   if (a.proceso === 'skp') return 'Es el modelo base de la obra. Para cambiarlo, agregá otro SketchUp como "Modelo de estructura" y reemplaza a este.';
