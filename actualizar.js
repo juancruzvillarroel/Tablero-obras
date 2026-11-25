@@ -28,9 +28,9 @@ const OBRAS = {
   argerich: {
     procesos: {
       skp: { tipo: 'skp', carpeta: 'skp', copia: 'skp/modelo.skp' },
-      es: { tipo: 'dwg', copia: 'rich_es.dwg', dxf: 'rich_es.dxf', leer: [['.', 'parse.js', 'rich_es.dxf'], ['.', 'extract.js']] },
-      san: { tipo: 'dwg', copia: 'san/ins.dwg', dxf: 'san/ins.dxf', leer: [['san', 'parse.js', 'ins.dxf']] },
-      alb: { tipo: 'dwg', copia: 'alb/muros.dwg', dxf: 'alb/muros.dxf', leer: [['alb', 'inspeccion.js']] },
+      es: { tipo: 'dwg', copia: 'rich_es.dwg', dxf: 'rich_es.dxf', leer: [['.', 'parse.js', 'rich_es.dxf'], ['.', 'extract.js']], hecho: ['dxf.json'] },
+      san: { tipo: 'dwg', copia: 'san/ins.dwg', dxf: 'san/ins.dxf', leer: [['san', 'parse.js', 'ins.dxf']], hecho: ['san/dxf.json'] },
+      alb: { tipo: 'dwg', copia: 'alb/muros.dwg', dxf: 'alb/muros.dxf', leer: [['alb', 'inspeccion.js']], hecho: ['alb/muros.json'] },
     },
     cadena: [['skp', 'extraer-skp.js'], ['skp', 'datos-tablero.js'], ['san', 'pases.js'], ['san', 'armar.js'], ['san', 'arquitectura.js'], ['alb', 'armar-muros2.js'], ['alb', 'separar.js']],
     salidas: ['skp/skp.json', 'skp/modelo-skp.json', 'skp/tablero-datos.json', 'skp/modelo.skp', 'dxf.json', 'modelo.json', 'san/dxf.json', 'san/pases.json', 'san/sanitaria.json', 'alb/muros.dxf', 'alb/muros.json', 'alb/albanileria.json'],
@@ -38,7 +38,7 @@ const OBRAS = {
   habana: {
     procesos: {
       skp: { tipo: 'skp', carpeta: 'hab', copia: 'hab/modelo.skp' },
-      es: { tipo: 'dwg', copia: 'hab/HAB_ES.dwg', dxf: 'hab/HAB_ES.dxf', leer: [['hab', '../parse.js', 'HAB_ES.dxf']] },
+      es: { tipo: 'dwg', copia: 'hab/HAB_ES.dwg', dxf: 'hab/HAB_ES.dxf', leer: [['hab', '../parse.js', 'HAB_ES.dxf']], hecho: ['hab/dxf.json'] },
     },
     cadena: [['hab', 'extraer.js'], ['hab', 'pases.js']],
     salidas: ['hab/skp.json', 'hab/tablero-datos.json', 'hab/modelo.skp', 'hab/HAB_ES.dwg', 'hab/HAB_ES.dxf', 'hab/dxf.json', 'hab/sanitaria.json'],
@@ -47,7 +47,7 @@ const OBRAS = {
   libertador: {
     procesos: {
       skp: { tipo: 'skp', carpeta: 'lib', copia: 'lib/modelo.skp' },
-      alb: { tipo: 'dwg', copia: 'lib/alb/muros.dwg', dxf: 'lib/alb/muros.dxf', leer: [['lib/alb', 'inspeccion.js']] },
+      alb: { tipo: 'dwg', copia: 'lib/alb/muros.dwg', dxf: 'lib/alb/muros.dxf', leer: [['lib/alb', 'inspeccion.js']], hecho: ['lib/alb/muros.json'] },
     },
     cadena: [['lib', 'extraer.js'], ['lib/alb', 'armar-muros.js']],
     salidas: ['lib/skp.json', 'lib/tablero-datos.json', 'lib/modelo.skp', 'lib/alb/muros.dwg', 'lib/alb/muros.dxf', 'lib/alb/muros.json', 'lib/alb/albanileria.json'],
@@ -61,8 +61,13 @@ const OBRAS = {
   },
 };
 
+// Si un paso falla, el mensaje es la línea que dice qué pasó (la del error), no la cola del volcado de Node
+const mensajeDe = txt => { const L = String(txt).trim().split('\n').map(l => l.trim()).filter(Boolean); return L.find(l => /^(\w*Error|ERROR)\b/.test(l)) || L.slice(-3).join(' '); };
+// Lo que deja cada conversión (no va al repositorio: es pesado y se rehace). Si falta en esta compu, ese archivo
+// de la obra nunca se convirtió acá (una compu recién instalada) y el armado de la obra no puede usarlo.
+const convertido = proc => proc.hecho || (proc.tipo === 'skp' ? [path.join(proc.carpeta, 'skp.json')] : [proc.dxf]);
 const correr = (exe, args, cwd, ms = 300000) => new Promise((ok, mal) => {
-  execFile(exe, args, { cwd, timeout: ms, maxBuffer: 64 * 1024 * 1024, windowsHide: true }, (err, so, se) => err ? mal(new Error((se || so || err.message).toString().trim().split('\n').slice(-3).join(' '))) : ok(so.toString()));
+  execFile(exe, args, { cwd, timeout: ms, maxBuffer: 64 * 1024 * 1024, windowsHide: true }, (err, so, se) => err ? mal(new Error(mensajeDe(se || so || err.message))) : ok(so.toString()));
 });
 const nodo = (dir, script, ...args) => correr(process.execPath, [script, ...args], path.join(RAIZ, dir));
 
@@ -109,6 +114,34 @@ function resumen(id) {
   };
 }
 
+// Copia el archivo de la carpeta de la obra a la de trabajo y lo convierte (SketchUp → skp.json; DWG → DXF y lectura)
+async function convertir(P, a, proc, avisar) {
+  const origen = path.join(P.raiz, a.ruta);
+  if (!fs.existsSync(origen)) throw new Error('No encuentro ' + path.basename(a.ruta) + ' en la carpeta de la obra');
+  avisar('Copiando ' + path.basename(a.ruta));
+  const copia = path.join(RAIZ, proc.copia); fs.mkdirSync(path.dirname(copia), { recursive: true }); fs.copyFileSync(origen, copia);
+  if (proc.tipo === 'skp' && !SKETCHUP) throw new Error('No encuentro SketchUp instalado en esta compu');
+  if (proc.tipo !== 'skp' && !ACCORE) throw new Error('No encuentro AutoCAD instalado en esta compu (hace falta para leer los DWG)');
+  if (proc.tipo === 'skp') {
+    avisar('Abriendo ' + path.basename(a.ruta) + ' en SketchUp y exportando sus piezas (puede tardar un minuto)');
+    const dir = path.join(RAIZ, proc.carpeta), log = path.join(dir, 'log.txt'), salida = path.join(dir, 'skp.json');
+    try { fs.unlinkSync(log); } catch (e) { /* no había */ }
+    const t0 = Date.now();
+    await correr(SKETCHUP, ['-RubyStartup', path.join(dir, 'exportar.rb'), copia], dir, 600000).catch(() => {});   // SketchUp sale solo al terminar
+    const l = fs.existsSync(log) ? fs.readFileSync(log, 'utf8') : '';
+    if (!l.startsWith('ok') || !fs.existsSync(salida) || fs.statSync(salida).mtimeMs < t0) throw new Error('SketchUp no pudo exportar el modelo' + (l ? ': ' + l.trim().split('\n')[0] : ''));
+    avisar('SketchUp: ' + l.trim().split('\n')[0].replace(/^ok /, ''));
+  } else {
+    avisar('Pasando ' + path.basename(a.ruta) + ' a DXF con AutoCAD');
+    const dxf = path.join(RAIZ, proc.dxf), scr = path.join(path.dirname(dxf), 'a-dxf-auto.scr');
+    try { fs.unlinkSync(dxf); } catch (e) { /* no había */ }
+    fs.writeFileSync(scr, ['FILEDIA', '0', '_.DXFOUT', '"' + dxf.split('/').join('\\') + '"', '16', '_.QUIT', 'Y', ''].join('\r\n'));
+    await correr(ACCORE, ['/i', copia, '/s', scr], path.dirname(dxf), 300000).catch(() => {});
+    if (!fs.existsSync(dxf) || fs.statSync(dxf).size < 1000) throw new Error('AutoCAD no pudo pasar ' + path.basename(a.ruta) + ' a DXF');
+    for (const [dir, script, ...args] of proc.leer) { avisar('Leyendo el DXF (' + script + ')'); await nodo(dir, script, ...args); }
+  }
+  return fs.statSync(origen);
+}
 async function actualizar(id, indice, avisar = () => {}) {
   const obra = OBRAS[id]; if (!obra) throw new Error('Obra desconocida: ' + id);
   const lista = leerObras();
@@ -127,29 +160,15 @@ async function actualizar(id, indice, avisar = () => {}) {
   const volver = () => { for (const f of guardados) fs.copyFileSync(path.join(resp, f), path.join(RAIZ, f)); fs.copyFileSync(path.join(resp, 'proyectos.json'), path.join(RAIZ, 'proyectos.json')); };
 
   try {
-    avisar('Copiando ' + path.basename(a.ruta));
-    const copia = path.join(RAIZ, proc.copia); fs.mkdirSync(path.dirname(copia), { recursive: true }); fs.copyFileSync(origen, copia);
-    const st = fs.statSync(origen);
-
-    if (proc.tipo === 'skp' && !SKETCHUP) throw new Error('No encuentro SketchUp instalado en esta compu');
-    if (proc.tipo !== 'skp' && !ACCORE) throw new Error('No encuentro AutoCAD instalado en esta compu (hace falta para leer los DWG)');
-    if (proc.tipo === 'skp') {
-      avisar('Abriendo el modelo en SketchUp y exportando sus piezas (puede tardar un minuto)');
-      const dir = path.join(RAIZ, proc.carpeta), log = path.join(dir, 'log.txt'), salida = path.join(dir, 'skp.json');
-      try { fs.unlinkSync(log); } catch (e) {}
-      const t0 = Date.now();
-      await correr(SKETCHUP, ['-RubyStartup', path.join(dir, 'exportar.rb'), copia], dir, 600000).catch(() => {});   // SketchUp sale solo al terminar
-      const l = fs.existsSync(log) ? fs.readFileSync(log, 'utf8') : '';
-      if (!l.startsWith('ok') || fs.statSync(salida).mtimeMs < t0) throw new Error('SketchUp no pudo exportar el modelo' + (l ? ': ' + l.trim().split('\n')[0] : ''));
-      avisar('SketchUp: ' + l.trim().split('\n')[0].replace(/^ok /, ''));
-    } else {
-      avisar('Pasando el DWG a DXF con AutoCAD');
-      const dxf = path.join(RAIZ, proc.dxf), scr = path.join(path.dirname(dxf), 'a-dxf-auto.scr');
-      try { fs.unlinkSync(dxf); } catch (e) {}
-      fs.writeFileSync(scr, ['FILEDIA', '0', '_.DXFOUT', '"' + dxf.split('/').join('\\') + '"', '16', '_.QUIT', 'Y', ''].join('\r\n'));
-      await correr(ACCORE, ['/i', copia, '/s', scr], path.dirname(dxf), 300000).catch(() => {});
-      if (!fs.existsSync(dxf) || fs.statSync(dxf).size < 1000) throw new Error('AutoCAD no pudo pasar el DWG a DXF');
-      for (const [dir, script, ...args] of proc.leer) { avisar('Leyendo el DXF (' + script + ')'); await nodo(dir, script, ...args); }
+    const st = await convertir(P, a, proc, avisar);
+    // En una compu recién instalada los otros archivos de la obra nunca se convirtieron acá: el armado los necesita
+    // (por ejemplo, los muros de Libertador toman la altura de la estructura). Se convierten primero, con la versión
+    // que hay hoy en la carpeta de la obra.
+    for (const [j, otro] of P.archivos.entries()) {
+      const op = j !== indice && !otro.pendiente && otro.proceso && obra.procesos[otro.proceso];
+      if (!op || convertido(op).every(f => fs.existsSync(path.join(RAIZ, f)))) continue;
+      avisar('En esta compu falta convertir ' + path.basename(otro.ruta) + ': lo convierto primero');
+      const so = await convertir(P, otro, op, avisar); otro.cargado = new Date().toISOString(); otro.tam = so.size;
     }
 
     for (const [dir, script] of obra.cadena) { avisar('Rearmando: ' + dir + '/' + script); await nodo(dir, script); }
