@@ -17,7 +17,22 @@ const json = (res, cod, obj) => { res.writeHead(cod, { 'Content-Type': 'applicat
 function leerCuerpo(req) { return new Promise(ok => { let b = ''; req.on('data', c => { b += c; if (b.length > 1e4) req.destroy(); }); req.on('end', () => { try { ok(JSON.parse(b || '{}')); } catch (e) { ok({}); } }); }); }
 const fresco = m => { delete require.cache[require.resolve(m)]; return require(m); };
 
-http.createServer(async (req, res) => {
+// Un error en un pedido (por ejemplo, un archivo de OneDrive bloqueado justo cuando se guarda desde SketchUp o
+// AutoCAD) no puede tirar el servidor: antes cortaba el proceso entero y el tablero local dejaba de responder.
+// Se responde con el error y se anota en respaldo/servidor.log.
+const LOG = path.join(__dirname, 'respaldo', 'servidor.log');
+function anotar(...a) {
+  try { fs.mkdirSync(path.dirname(LOG), { recursive: true }); fs.appendFileSync(LOG, new Date().toISOString() + ' ' + a.map(x => (x && x.stack) ? x.stack : String(x)).join(' ') + '\n'); } catch (e) { /* sin registro, sigue igual */ }
+}
+process.on('uncaughtException', e => anotar('error sin atrapar:', e));
+process.on('unhandledRejection', e => anotar('promesa rechazada:', e));
+
+http.createServer((req, res) => atender(req, res).catch(e => {
+  anotar(req.method, req.url, e);
+  try { if (!res.headersSent) json(res, 500, { error: 'Error del servidor local: ' + e.message }); else res.end(); } catch (e2) { /* la conexión ya se cerró */ }
+})).on('error', e => anotar('servidor:', e)).listen(PUERTO, '127.0.0.1', () => { console.log(`Tablero en http://localhost:${PUERTO}`); anotar('arranca en el puerto', PUERTO); });
+
+async function atender(req, res) {
   const ruta = req.url.split('?')[0];
   if (ruta === '/api/archivos' && req.method === 'GET') {
     const { estadoArchivos } = fresco('./armar-tablero.js'), A = fresco('./actualizar.js');
@@ -66,4 +81,4 @@ http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
     res.end('<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}img{max-width:100%}</style></head><body>' + datos + '</body></html>');
   });
-}).listen(PUERTO, '127.0.0.1', () => console.log(`Tablero en http://localhost:${PUERTO}`));
+}
