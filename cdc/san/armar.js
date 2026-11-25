@@ -349,7 +349,8 @@ for (const P of PISOS) {
   const pares = [];
   for (const [i, t] of labels.entries()) for (const [j, c] of cand.entries()) {
     const dist = Math.hypot(c.x - t.p[0], c.y - t.p[1]);
-    const ok = t.tipo === 'inodoro' ? c.d >= 0.1 : c.d < 0.1;
+    // Las puntas de los caños de ventilación no son descargas (un Ø110 de ventilación se confundía con un inodoro).
+    const ok = c.sis !== 'ventilacion' && (t.tipo === 'inodoro' ? c.d >= 0.1 : c.d < 0.1);
     if (!ok || dist > 1.4) continue;
     pares.push({ i, j, puntaje: dist - (t.tipo === 'pileta' && c.mesada ? 0.6 : 0) });
   }
@@ -375,7 +376,7 @@ for (const P of PISOS) {
     if (!mejor) return;
     const { c, p } = mejor; usadoL.add(i);
     const ini = c.p3[0], fin = c.p3[c.p3.length - 1];
-    const extremoCerca = [[ini, 0], [fin, 1]].find(([e]) => Math.hypot(e[0] - p.x, e[1] - p.y) < 0.35);
+    const extremoCerca = [[ini, 0], [fin, 1]].find(([e]) => Math.hypot(e[0] - p.x, e[1] - p.y) < 0.45);
     let x = p.x, y = p.y, z = p.z;
     if (extremoCerca) { [x, y, z] = extremoCerca[0]; uniones.push({ tipo: 'codo', sis: 'primaria', d: 0.11, p: [x, y, z], a: [0, 0, 1], b: salida(c, extremoCerca[1]) }); }
     else uniones.push({ tipo: 'ramal', sis: 'primaria', d: c.d, dr: 0.11, p: [x, y, z], a: p.dir, b: [0, 0, 1] });
@@ -384,6 +385,32 @@ for (const P of PISOS) {
     artefactos.push({ tipo: 'inodoro', piso: P.id, x: r3(x), y: r3(y), z: P.zPiso, frente: [fx, fy], d: 0.11, sis: 'primaria' });
   });
   labels.forEach((t, i) => { if (!usadoL.has(i)) { artefactos.push({ tipo: t.tipo, piso: P.id, x: r3(t.p[0]), y: r3(t.p[1]), z: P.zPiso, frente: [1, 0], sinDescarga: true }); } });
+}
+// Piletas de cocina: van con la espalda contra la medianera más cercana (las medianeras son los lados largos del
+// edificio, y ≈ 5,45 y 14,55 en el modelo), no hacia donde quedó escrito el rótulo.
+const MEDIANERAS_Y = [5.45, 14.55];
+for (const a of artefactos.filter(a => a.tipo === 'pileta')) {
+  const cerca = MEDIANERAS_Y.reduce((m, y) => Math.abs(y - a.y) < Math.abs(m - a.y) ? y : m);
+  a.frente = [0, cerca < a.y ? 1 : -1];
+}
+// Correcciones de la planta tipo marcadas por el estudio sobre la planta (25/11): hacia dónde mira cada artefacto
+// (el rótulo del plano no siempre está del lado del frente) y el lavarropas del contrafrente, cuyo rótulo quedó en el
+// dormitorio, lejos de su descarga de Ø40 en el lavadero del contrafrente. Se aplican por posición: la planta tipo
+// se repite igual en todos los pisos.
+const CORRECCIONES = [
+  { tipo: 'inodoro', en: [14.67, 14.25], frente: [0, -1] },
+  { tipo: 'inodoro', en: [13.53, 9.55], frente: [1, 0] },
+  { tipo: 'inodoro', en: [21.84, 14.14], frente: [0, -1] },
+  { tipo: 'inodoro', en: [21.89, 9.41], frente: [0, 1] },
+  { tipo: 'bacha', en: [21.76, 10.85], frente: [0, -1] },
+  { tipo: 'lavarropas', en: [26.27, 11.45], frente: [1, 0], descargaEn: [26.60, 13.74] },
+];
+for (const k of CORRECCIONES) for (const a of artefactos.filter(a => a.tipo === k.tipo && Math.hypot(a.x - k.en[0], a.y - k.en[1]) < 0.3)) {
+  a.frente = k.frente;
+  if (!k.descargaEn) continue;
+  const v = verticales.find(v => v.piso.id === a.piso && v.tipo === 'artefacto' && v.sis !== 'ventilacion' && Math.hypot(v.x - k.descargaEn[0], v.y - k.descargaEn[1]) < 0.3);
+  if (!v) { avisos.push(`${a.piso}: no encontré la descarga del lavarropas del contrafrente.`); continue; }
+  Object.assign(a, { x: r3(v.x), y: r3(v.y), d: v.d, sis: v.sis }); delete a.sinDescarga;
 }
 // Cámara de inspección de PB (rectángulo de 60x60 en la capa de primaria)
 for (const e of san.entities.filter(e => e.layer === 'CLOACA PRIMARA' && e.type === 'LWPOLYLINE' && e.shape && e.vertices.length >= 4)) {
