@@ -51,15 +51,17 @@ const OBRAS = {
     },
     cadena: [['lib', 'extraer.js'], ['lib/alb', 'armar-muros.js']],
     salidas: ['lib/skp.json', 'lib/tablero-datos.json', 'lib/modelo.skp', 'lib/alb/muros.dwg', 'lib/alb/muros.dxf', 'lib/alb/muros.json', 'lib/alb/albanileria.json'],
-  },  // Condarco 3187: SketchUp de estructura y CAD de instalación sanitaria cloacal (cdc/san/armar.js la alinea con
-  // el modelo y la arma en 3D).
+  },  // Condarco 3187: SketchUp de estructura, CAD de instalación sanitaria cloacal (cdc/san/armar.js la alinea con
+  // el modelo y la arma en 3D) y plano de estructura, del que se leen los pases en losa (cdc/es/pases.js) para
+  // compararlos con la sanitaria.
   condarco: {
     procesos: {
       skp: { tipo: 'skp', carpeta: 'cdc', copia: 'cdc/modelo.skp' },
       san: { tipo: 'dwg', copia: 'cdc/san/ins.dwg', dxf: 'cdc/san/ins.dxf', leer: [['cdc/san', '../../san/parse.js', 'ins.dxf']], hecho: ['cdc/san/dxf.json'] },
+      es: { tipo: 'dwg', copia: 'cdc/es/es.dwg', dxf: 'cdc/es/es.dxf', leer: [['cdc/es', 'pases.js', 'es.dxf']], hecho: ['cdc/es/pases.json'] },
     },
     cadena: [['cdc', 'extraer.js'], ['cdc/san', 'armar.js']],
-    salidas: ['cdc/skp.json', 'cdc/tablero-datos.json', 'cdc/modelo.skp', 'cdc/san/dxf.json', 'cdc/san/sanitaria.json'],
+    salidas: ['cdc/skp.json', 'cdc/tablero-datos.json', 'cdc/modelo.skp', 'cdc/san/dxf.json', 'cdc/san/sanitaria.json', 'cdc/es/pases.json'],
   },
 };
 
@@ -89,6 +91,7 @@ async function sincronizar(avisar = () => {}) {
 }
 async function publicar(mensaje) {
   try {
+    if (process.env.TABLERO_SIN_PUBLICAR) return { publicado: false, motivo: 'no se publica: prueba con TABLERO_SIN_PUBLICAR' };
     if (!(await hayGitHub())) return { publicado: false, motivo: 'el repositorio no tiene GitHub configurado' };
     await correr('git', ['add', '-A'], RAIZ);
     if (!(await correr('git', ['status', '--porcelain'], RAIZ)).trim()) return { publicado: true };
@@ -200,7 +203,7 @@ async function actualizar(id, indice, avisar = () => {}) {
 // y el plano del ingeniero de Argerich lo usan la estructura y la instalación, así que esos se reemplazan agregando
 // otro del mismo tipo. Agregar toma un archivo de la carpeta de la obra: si es de un tipo que la obra ya sabe leer,
 // lo carga (y reemplaza al anterior de ese tipo); si no, queda en la lista como pendiente de procesar.
-const ROLES = id => ({ skp: 'Modelo de estructura', es: id === 'habana' ? 'Plano de estructura y pases en losa' : 'Plano de estructura del ingeniero', san: 'Instalación sanitaria', alb: 'Albañilería' });
+const ROLES = id => ({ skp: 'Modelo de estructura', es: id === 'habana' || id === 'condarco' ? 'Plano de estructura y pases en losa' : 'Plano de estructura del ingeniero', san: 'Instalación sanitaria', alb: 'Albañilería' });
 // Qué dato de la obra sale de cada archivo (se apaga al quitarlo y se vuelve a prender al agregarlo)
 const DATOS = { argerich: { san: ['san', 'san/sanitaria.json'], alb: ['alb', 'alb/albanileria.json'] }, habana: { es: ['san', 'hab/sanitaria.json'] }, libertador: { alb: ['alb', 'lib/alb/albanileria.json'] }, condarco: { san: ['san', 'cdc/san/sanitaria.json'] } };
 function motivoNoQuitar(id, a) {

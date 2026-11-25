@@ -34,6 +34,36 @@ function anotar(...a) {
 process.on('uncaughtException', e => anotar('error sin atrapar:', e));
 process.on('unhandledRejection', e => anotar('promesa rechazada:', e));
 
+// Actualización automática: los archivos marcados "auto": true en proyectos.json se vuelven a cargar solos cuando
+// cambian en OneDrive, igual que con el botón Actualizar (convierte, rearma y publica). Se revisa cada 2 minutos y se
+// espera a que el archivo lleve 2 minutos sin cambiar, para no leerlo a mitad de un guardado o de la sincronización.
+// Si falla, no se reintenta hasta que el archivo vuelva a cambiar (el error queda en el menú Archivos y en el log).
+const fallidos = new Map();   // proyecto/ruta → fecha de modificación con la que falló
+function revisarAuto() {
+  if (trabajo && !trabajo.fin) return;
+  try {
+    const { estadoArchivos } = fresco('./armar-tablero.js');
+    for (const p of fresco('./obras.js').leerObras()) {
+      const est = estadoArchivos(p);
+      for (const [i, a] of (p.archivos || []).entries()) {
+        const e = est[i];
+        if (!a.auto || e.estado !== 'cambio' || Date.now() - new Date(e.modificado).getTime() < 120e3) continue;
+        const clave = p.id + '/' + a.ruta; if (fallidos.get(clave) === e.modificado) continue;
+        trabajo = { proyecto: p.id, indice: i, archivo: path.basename(a.ruta), auto: true, pasos: [], inicio: Date.now(), fin: null };
+        const t = trabajo; anotar('actualización automática:', clave);
+        fresco('./actualizar.js').actualizar(p.id, i, m => t.pasos.push(m))
+          .then(r => { t.ok = true; t.resultado = r; fallidos.delete(clave); }, err => { t.ok = false; t.error = err.message; fallidos.set(clave, e.modificado); anotar('actualización automática falló:', clave, err.message); })
+          .finally(() => { t.fin = Date.now(); });
+        return;   // de a uno por vez: el próximo, en la revisión siguiente
+      }
+    }
+  } catch (err) { anotar('actualización automática:', err); }
+}
+setInterval(revisarAuto, 120e3); setTimeout(revisarAuto, 20e3);
+
+// En una compu recién instalada todavía no está armada la página: se arma al arrancar (antes daba error 500)
+if (!fs.existsSync(ARCHIVO)) require('child_process').execFile(process.execPath, ['armar-tablero.js'], { cwd: __dirname, windowsHide: true }, err => err && anotar('armar la página al arrancar:', err));
+
 http.createServer((req, res) => atender(req, res).catch(e => {
   anotar(req.method, req.url, e);
   try { if (!res.headersSent) json(res, 500, { error: 'Error del servidor local: ' + e.message }); else res.end(); } catch (e2) { /* la conexión ya se cerró */ }

@@ -111,6 +111,14 @@
         "proceso": "san",
         "cargado": "2026-11-25T14:31:58.221Z",
         "tam": 327205
+      },
+      {
+        "rol": "Plano de estructura y pases en losa",
+        "ruta": "04_DOCUMENTACIÓN TÉCNICA/02_ESTRUCTURA/01_ESTRUCTURA/DWG/CDC 3187_ES.dwg",
+        "proceso": "es",
+        "cargado": "2026-11-25T15:59:46.581Z",
+        "tam": 1471408,
+        "auto": true
       }
     ]
   }

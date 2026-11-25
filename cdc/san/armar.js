@@ -6,11 +6,12 @@
 //   (146.552, 77.555) y el plano de estructura CDC 3187_ES la inserta en (217.603, 69.366), sobre una hoja cuyas
 //   columnas coinciden con las del modelo corriéndolas (-120, -100). De ahí: x - 48.949, y - 108.190 (mod 20).
 // - Hay subsuelo: lo de planta baja va colgado bajo la losa del subsuelo (no enterrado).
-// - Los pases del ingeniero de esta obra no están cargados: no se comparan.
+// - Pases del ingeniero: los de la lámina "PASES EN LOSA" del plano de estructura (cdc/es/pases.js), ya en coordenadas
+//   del modelo y por losa. Si en esta compu no está cargado ese plano, no se comparan.
 const fs = require('fs');
 const san = JSON.parse(fs.readFileSync('dxf.json'));
 const tab = JSON.parse(fs.readFileSync('../tablero-datos.json'));
-const PASES = {};
+const PASES = fs.existsSync('../es/pases.json') ? JSON.parse(fs.readFileSync('../es/pases.json')) : {};
 
 // ---------- Pisos: hoja de la sanitaria, losa de piso (por donde bajan) y losa de techo ----------
 const Z = Object.fromEntries(tab.niveles.map(n => [n.id, n.z]));
@@ -25,7 +26,8 @@ const PISOS = [
   // Techos: sobre la losa de la sala de máquinas (lo que llega acá son las ventilaciones que salen al exterior)
   { id: 'TE', nombre: 'Techos', y0: -10, piso: 'sSM', techo: null, azotea: true },
 ];
-PISOS.forEach(p => { p.zPiso = Z[p.piso]; p.zTecho = p.techo ? Z[p.techo] : null; p.pases = null; });
+// Pases de cada piso: los de su losa de piso (por donde bajan sus caños)
+PISOS.forEach(p => { p.zPiso = Z[p.piso]; p.zTecho = p.techo ? Z[p.techo] : null; p.pases = PASES[p.piso] ? p.piso : null; });
 const aSKP = (x, y, y0) => [x - 48.949, y - y0 + 1.810];
 
 // ---------- Estructura: losas y vigas por nivel (cajas en planta + cotas) ----------
@@ -210,7 +212,7 @@ for (const c of caños) {
 }
 // Cocina: el caño va bajo la mesada hasta la pared y ahí baja. La pared es el extremo con un pase del ingeniero
 // más cerca; en ese extremo se agrega la bajada hasta el cielorraso de abajo.
-const rectsIng = P => (PASES[P.pases] || []).map(r => { const [ax, ay] = aSKP(r.x0, r.y0 + P.y0, P.y0), [bx, by] = aSKP(r.x1, r.y1 + P.y0, P.y0); return { x0: ax, y0: ay, x1: bx, y1: by }; });
+const rectsIng = P => (PASES[P.pases] || []).map(r => ({ ...r }));
 const dRect = (x, y, r) => Math.hypot(Math.max(r.x0 - x, 0, x - r.x1), Math.max(r.y0 - y, 0, y - r.y1));
 for (const c of caños.filter(c => c.modo === 'mesada')) {
   const rs = rectsIng(c.piso), dp = p => Math.min(...rs.map(r => dRect(p[0], p[1], r)), 99);
@@ -401,10 +403,7 @@ for (const c of caños.filter(c => c.modo === 'pared' || c.modo === 'contrapiso'
   const [x, y] = c.pts[c.pts.length - 1]; if (c.piso.pases) pasesReq.push({ piso: c.piso, x, y, d: c.d, sis: c.sis, origen: c.modo });
 }
 const pasesIng = [];
-for (const P of PISOS.filter(p => p.pases)) for (const r of PASES[P.pases] || []) {
-  const [ax, ay] = aSKP(r.x0, r.y0 + P.y0, P.y0), [bx, by] = aSKP(r.x1, r.y1 + P.y0, P.y0);
-  pasesIng.push({ piso: P, x0: ax, y0: ay, x1: bx, y1: by, usado: false });
-}
+for (const P of PISOS.filter(p => p.pases)) for (const r of PASES[P.pases] || []) pasesIng.push({ piso: P, ...r, usado: false });
 for (const q of pasesReq) {
   // "Baja en pase" no dice exactamente dónde: se acepta un pase a menos de 50 cm del extremo.
   const tol = (q.origen === 'pared' || q.origen === 'contrapiso' || q.origen === 'mesada' ? 0.5 : 0.10) + q.d / 2;

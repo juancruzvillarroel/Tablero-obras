@@ -6,7 +6,7 @@ const fs = require('fs'), path = require('path');
 const raiz = __dirname, salida = process.argv[2] || 'argerich-estructura.html', lista = process.argv[3] || 'proyectos.json';
 const leer = f => f ? JSON.parse(fs.readFileSync(path.join(raiz, f), 'utf8')) : null;
 function archivo(p, a) {
-  const ruta = p.raiz ? path.join(p.raiz, a.ruta) : null, out = { rol: a.rol, proceso: a.proceso, nombre: path.basename(a.ruta), leido: a.leido, carpeta: path.dirname(a.ruta).split(path.sep).join(' / ').split('/').map(s => s.trim()).filter(Boolean).join(' / '), cargado: a.cargado };
+  const ruta = p.raiz ? path.join(p.raiz, a.ruta) : null, out = { rol: a.rol, proceso: a.proceso, auto: a.auto, nombre: path.basename(a.ruta), leido: a.leido, carpeta: path.dirname(a.ruta).split(path.sep).join(' / ').split('/').map(s => s.trim()).filter(Boolean).join(' / '), cargado: a.cargado };
   let st = null; try { st = ruta && fs.statSync(ruta); } catch (e) {}
   if (!st) {
     out.estado = 'falta';
