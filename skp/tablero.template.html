@@ -1221,7 +1221,7 @@ const PISO_NIVEL = SAN.pisos.some(p => p.nivel) ? Object.fromEntries(SAN.pisos.m
 const NOM_PISO = Object.fromEntries(SAN.pisos.map(p => [p.id, p.nombre]));
 const NOM_MODO = {
   cielorraso: 'colgado bajo losa', bajo_viga: 'por debajo de la viga', contrapiso: 'por contrapiso', pared: 'por pared',
-  muro: 'embutido en muro', mesada: 'bajo mesada, baja en la pared', enterrado: 'enterrado', montante: 'montante', caida: 'caída de artefacto',
+  muro: 'embutido en muro', mesada: 'bajo mesada, baja en la pared', cocina: 'bajo mesada, baja por la pared y por contrapiso a la B.A.', enterrado: 'enterrado', montante: 'montante', caida: 'caída de artefacto',
 };
 const NOM_ORIGEN = { montante: 'montante', artefacto: 'caída de artefacto', inodoro: 'inodoro', PPA: 'pileta de patio', embudo: 'embudo pluvial', pared: 'baja en pase (por pared)', contrapiso: 'baja en pase (por contrapiso)', mesada: 'bajada de cocina' };
 const NOM_PIEZA = { ppa: 'Pileta de patio abierta (PPA)', embudo: 'Embudo pluvial con rejilla', ba: 'Boca de acceso', camara: 'Cámara de inspección 60x60', codo: 'Codo', ramal: 'Ramal', cupla: 'Cupla' };

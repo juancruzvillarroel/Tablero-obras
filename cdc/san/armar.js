@@ -94,7 +94,15 @@ for (const P of PISOS) {
     }
     // Sentido de escurrimiento: termina en el extremo más cercano a una bajada, PPA o boca de acceso.
     const dS = p => Math.min(...sumideros.map(s => Math.hypot(s.p.x - p.x, s.p.y - p.y)), 99);
-    const pts = dS(v[0]) < dS(v[v.length - 1]) ? v.slice().reverse() : v.slice();
+    let pts = dS(v[0]) < dS(v[v.length - 1]) ? v.slice().reverse() : v.slice();
+    // Cocina: el Ø40 que une la pileta (rótulo P.C.) con la boca de acceso (rótulo B.A.) no va colgado: sale de la
+    // pileta bajo la mesada hasta la pared, baja por la pared y por contrapiso llega a la B.A. (criterio del estudio).
+    if (sis === 'secundaria' && modo === 'cielorraso' && !nota) {
+      const rot = (re, p) => textos.some(t => re.test(t.t) && Math.hypot(t.p.x - p.x, t.p.y - p.y) < 0.3);
+      const PC = /^P\.?\s*C\.?$/i, BA = /^B\.?\s*A\.?$/i, a = v[0], b = v[v.length - 1];
+      if (rot(PC, a) && rot(BA, b)) { modo = 'cocina'; pts = v.slice(); }
+      else if (rot(PC, b) && rot(BA, a)) { modo = 'cocina'; pts = v.slice().reverse(); }
+    }
     locales.push({ piso: P, sis, d: w, modo, nota, nivelCielo, v, pts: pts.map(p => aSKP(p.x, p.y, P.y0)), L });
   }
   // Notas de "por contrapiso" / "baja por pared" sin flecha y sin caño al lado: no se adivina a qué tramo van (se avisa
@@ -194,7 +202,7 @@ for (const c of caños) {
   else if (c.modo === 'contrapiso') z0 = P.zPiso + 0.01 + R(c);
   else if (c.modo === 'pared') z0 = P.zPiso + 0.25;
   else if (c.modo === 'muro') z0 = P.zPiso + 0.30;
-  else if (c.modo === 'mesada') z0 = P.zPiso + 0.45;
+  else if (c.modo === 'mesada' || c.modo === 'cocina') z0 = P.zPiso + 0.45;
   else if (c.modo === 'cielorraso' || c.modo === 'bajo_viga') {
     const niv = c.nivelCielo || P.techo;
     z0 = fondoLosa(niv, x0, y0) - 0.03 - R(c);
@@ -209,6 +217,19 @@ for (const c of caños) {
   const s = c.sis === 'ventilacion' || c.sis === 'extraccion' ? 0 : c.pend ?? (c.modo === 'contrapiso' || c.sis === 'aire' ? 0.01 : pend(c.d));
   let acc = 0; c.p3 = [[x0, y0, z0]];
   for (let i = 1; i < c.pts.length; i++) { acc += Math.hypot(c.pts[i][0] - c.pts[i - 1][0], c.pts[i][1] - c.pts[i - 1][1]); c.p3.push([...c.pts[i], z0 - s * acc]); }
+  // Cocina: bajo mesada hasta la pared (2° punto), baja por la pared y sigue por contrapiso hasta la B.A.
+  if (c.modo === 'cocina' && c.pts.length >= 3) {
+    const zc = P.zPiso + 0.01 + R(c), pared = c.p3[1];
+    c.p3 = [c.p3[0], pared, [pared[0], pared[1], zc]];
+    let a = 0; for (let i = 2; i < c.pts.length; i++) { a += Math.hypot(c.pts[i][0] - c.pts[i - 1][0], c.pts[i][1] - c.pts[i - 1][1]); c.p3.push([...c.pts[i], zc - 0.01 * a]); }
+  }
+}
+// La B.A. de la cocina está donde arranca el caño que baja (Ø63 primaria): el Ø40 termina ahí.
+for (const c of caños.filter(c => c.modo === 'cocina')) {
+  const fin = c.p3[c.p3.length - 1];
+  const o = caños.find(o => o.piso === c.piso && o.sis === 'primaria' && Math.hypot(o.p3[0][0] - fin[0], o.p3[0][1] - fin[1]) < 0.25);
+  if (o) { fin[0] = o.p3[0][0]; fin[1] = o.p3[0][1]; }
+  piezas.push({ tipo: 'ba', piso: c.piso.id, x: fin[0], y: fin[1], z: c.piso.zPiso });
 }
 // Cocina: el caño va bajo la mesada hasta la pared y ahí baja. La pared es el extremo con un pase del ingeniero
 // más cerca; en ese extremo se agrega la bajada hasta el cielorraso de abajo.
@@ -344,7 +365,7 @@ const artefactos = [];
 for (const P of PISOS) {
   const cand = [];
   for (const v of verticales.filter(v => v.piso === P && (v.tipo === 'artefacto' || v.tipo === 'inodoro'))) cand.push({ x: v.x, y: v.y, d: v.d, sis: v.sis });
-  for (const c of caños.filter(c => c.piso === P && ['mesada', 'pared', 'contrapiso'].includes(c.modo))) cand.push({ x: c.p3[0][0], y: c.p3[0][1], d: c.d, sis: c.sis, mesada: c.modo === 'mesada' });
+  for (const c of caños.filter(c => c.piso === P && ['mesada', 'cocina', 'pared', 'contrapiso'].includes(c.modo))) cand.push({ x: c.p3[0][0], y: c.p3[0][1], d: c.d, sis: c.sis, mesada: c.modo === 'mesada' || c.modo === 'cocina' });
   const labels = artTextos.filter(t => t.piso === P);
   const pares = [];
   for (const [i, t] of labels.entries()) for (const [j, c] of cand.entries()) {
