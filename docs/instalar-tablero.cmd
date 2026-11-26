@@ -22,6 +22,10 @@ echo Instalando lo que necesita (puede tardar un par de minutos)...
 call npm install --no-audit --no-fund
 rem Acceso directo en el escritorio
 powershell -NoProfile -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath('Desktop')+'\Tablero de obras.lnk'); $s.TargetPath='%DESTINO%\abrir-tablero.cmd'; $s.WorkingDirectory='%DESTINO%'; $s.Save()"
+rem Arranque con Windows: el servidor del tablero se prende solo y sin ventana al entrar a la compu (arrancar-servidor.vbs),
+rem asi el menu Archivos siempre puede actualizar. Para sacarlo, borrar "Tablero de obras (servidor)" de la carpeta Inicio.
+powershell -NoProfile -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath('Startup')+'\Tablero de obras (servidor).lnk'); $s.TargetPath=$env:WINDIR+'\System32\wscript.exe'; $s.Arguments='\"%DESTINO%\arrancar-servidor.vbs\"'; $s.WorkingDirectory='%DESTINO%'; $s.Save()"
+echo El tablero va a arrancar solo cada vez que prendas la compu.
 echo.
 echo Listo. Se abre el tablero; la proxima vez usa el acceso directo "Tablero de obras" del escritorio.
 call "%DESTINO%\abrir-tablero.cmd"

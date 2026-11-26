@@ -28,6 +28,8 @@ Los archivos subidos desde la compu se guardan en la carpeta `TABLERO` de cada o
 ## Cómo se usa
 
 - `abrir-tablero.cmd` levanta el servidor (`node servidor-tablero.js`) y abre http://localhost:5180.
+- `arrancar-servidor.vbs` prende el servidor sin ventana si no está andando. El instalador lo pone en la carpeta
+  Inicio de Windows ("Tablero de obras (servidor)"), así el tablero de cada compu arranca solo al entrar.
 - `node armar-tablero.js` arma la página (`argerich-estructura.html` y `docs/index.html`) con los datos actuales.
 - `node smoke.js` prueba que la página cargue sin errores.
 
