@@ -116,6 +116,8 @@ function resumen(id) {
     elementos: D ? D.elementos.length : 0, hormigon: D ? D.elementos.reduce((a, e) => a + e.vol, 0) : 0,
     pases: S ? (S.pasesIng || []).length : 0, tramos: S ? (S.tramos || []).length : 0,
     muros: A ? A.muros.length : 0, superficie: A ? A.muros.reduce((a, m) => a + m.sup, 0) : 0,
+    // lo que el lector del modelo no pudo usar (grupos que no conoce): se muestra en el resultado
+    avisos: (D && D.avisos) || [],
   };
 }
 

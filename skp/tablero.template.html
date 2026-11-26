@@ -474,15 +474,15 @@ $('#proyNombre').textContent = PROY.nombre; document.title = 'Modelo ' + PROY.no
   function resultadoTxt(r) {
     if (!r || !r.antes) return '';
     const a = r.antes, d = r.despues, dif = (k, u, dd) => Math.abs(d[k] - a[k]) > 1e-6 ? `${fmt(a[k], dd)} → <b>${fmt(d[k], dd)}</b> ${u}` : `${fmt(d[k], dd)} ${u} (sin cambios)`;
-    return [`Elementos: ${dif('elementos', '', 0)}`, `Hormigón: ${dif('hormigon', 'm³', 2)}`, d.tramos || a.tramos ? `Caños: ${dif('tramos', 'tramos', 0)}` : '', d.pases || a.pases ? `Pases: ${dif('pases', '', 0)}` : '', d.muros || a.muros ? `Muros: ${dif('superficie', 'm²', 1)}` : ''].filter(Boolean).join('<br>');
+    return [`Elementos: ${dif('elementos', '', 0)}`, `Hormigón: ${dif('hormigon', 'm³', 2)}`, d.tramos || a.tramos ? `Caños: ${dif('tramos', 'tramos', 0)}` : '', d.pases || a.pases ? `Pases: ${dif('pases', '', 0)}` : '', d.muros || a.muros ? `Muros: ${dif('superficie', 'm²', 1)}` : '', ...(d.avisos || []).map(x => `<span style="color:#f5c04a">Ojo: ${esc(x)}</span>`)].filter(Boolean).join('<br>');
   }
   const progreso = () => `<div class="arch-prog"><span class="giro" aria-hidden="true"></span><span>${esc(trabajo.pasos[trabajo.pasos.length - 1] || 'Empezando')}…</span></div>`;
   const publicadoTxt = r => r && r.publicado ? '<br>Publicado: la página online se actualiza en uno o dos minutos.' : r && r.motivo ? '<br>No se publicó en la página online: ' + esc(r.motivo) + '.' : '';
   const final = () => trabajo.ok ? `<div class="arch-prog ok">${trabajo.resultado && trabajo.resultado.pendiente ? 'Agregado a la lista.' : 'Listo.'} ${EN_LA_COMPU ? 'Recargando el tablero…' : ''}<br>${resultadoTxt(trabajo.resultado)}${publicadoTxt(trabajo.resultado)}${EN_LA_COMPU ? '' : '<br><button type="button" class="arch-act" id="archRecargar" style="margin-top:6px">Recargar la página</button>'}</div>`
     : `<div class="arch-prog mal">No se pudo: ${esc(trabajo.error)}. El tablero sigue como estaba.</div>`;
   // Sin el tablero andando en esta compu: cómo tenerlo (para subir, actualizar o quitar hace falta)
-  const sinTablero = () => `<div class="arch-agregar"><b>Para subir, actualizar o quitar archivos</b><span class="arch-pie" style="margin:0">Hace falta el tablero andando en tu compu, con SketchUp y AutoCAD (la conversión la hace tu compu).
-    ${EN_LA_COMPU ? 'No responde el servidor: abrí <b>abrir-tablero.cmd</b> en la carpeta del tablero y recargá esta página.' : 'Si ya lo tenés instalado, abrí <b>abrir-tablero.cmd</b> (o el acceso directo del escritorio) y recargá esta página. Si no, <a href="instalar-tablero.cmd" download style="color:#fff">descargá el instalador</a> y abrilo con doble clic.'}</span></div>`;
+  const sinTablero = () => `<div class="arch-agregar"><b>El tablero de tu compu no está abierto</b><span class="arch-pie" style="margin:0">Hace falta el tablero andando en tu compu, con SketchUp y AutoCAD (la conversión la hace tu compu).
+    ${EN_LA_COMPU ? 'No responde el servidor: abrí <b>abrir-tablero.cmd</b> en la carpeta del tablero y recargá esta página.' : 'Abrí el acceso directo <b>Tablero de obras</b> del escritorio (o <b>abrir-tablero.cmd</b> en la carpeta del tablero), esperá unos segundos y volvé a abrir este menú. Solo si todavía no lo instalaste en esta compu: <a href="instalar-tablero.cmd" download style="color:#fff">instalador</a>.'}</span></div>`;
   function panelAgregar() {
     if (mio() && trabajo.tipo === 'agregar') return `<div class="arch-agregar">${trabajo.fin ? final() : progreso()}</div>`;
     if (!agregando) return '';
