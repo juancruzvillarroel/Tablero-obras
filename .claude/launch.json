@@ -3,8 +3,7 @@
   "configurations": [
     {
       "name": "tablero",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["servidor-tablero.js"],
+      "url": "http://localhost:5180",
       "port": 5180
     }
   ]
