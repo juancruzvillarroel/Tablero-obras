@@ -46,6 +46,13 @@ for (const m of s.mallas) {
   const r = m.ruta, b = caja(m.tris), zTop = b[2][1];
   if (r[0] === '00_FUNDACIONES') {
     // Bases, la platea del núcleo (L2 h100), la viga de fundación y las vigas de encadenado / tensores (Grupo#187).
+    // Piezas sueltas en Fundaciones, sin categoría (el modelo de noviembre trae "LOS TERRENO NATURAL"): la losa sobre
+    // terreno va como losa de la fundación; cualquier otra, como base con su propio nombre.
+    if (!r[2]) {
+      if (/^LOS(A)?\b/i.test(r[1])) agregar(`base|losa|${r[1]}`, { nivel: 'base', nombre: 'Losa s/ terreno', seccion: '', tipo: 'losa' }, m.tris);
+      else agregar(`base|${r[1]}`, { nivel: 'base', ...parsear(r[1], 'base'), tipo: 'base' }, m.tris);
+      continue;
+    }
     if (r[1] === 'BASES' && /^L\d/.test(r[2])) agregar(`base|${r[2]}`, { nivel: 'base', ...parsear(r[2], 'base'), tipo: 'base' }, m.tris);
     else if (r[1] === 'BASES') agregar(`base|${r[2]}`, { nivel: 'base', ...parsear(r[2], 'base'), tipo: 'base' }, m.tris);
     else agregar(`base|${r[1]}|${r[2]}`, { nivel: 'base', ...parsear(r[2], 'viga'), tipo: 'viga_fundacion' }, m.tris);
