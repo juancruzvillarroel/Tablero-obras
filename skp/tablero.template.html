@@ -839,6 +839,11 @@ function volarA(pos, tgt) {
 
 // ---------- Estado de la vista ----------
 let modo = 'tipo', nivelSel = null, hastaAca = false, seleccion = null, hover = null;
+// Selección múltiple: Ctrl + clic (Cmd en Mac) en el modelo o en Elementos suma o saca piezas. Con más de una, la
+// ficha muestra los totales (hormigón, acero, muros) y la lista de lo elegido; "seleccion" queda en la última tocada.
+const seleccionados = new Set();
+const estaElegido = id => id != null && (id === seleccion || seleccionados.has(id));
+const hayEleccion = () => !!seleccion || seleccionados.size > 0;
 const tiposOn = Object.fromEntries(TIPOS.map(t => [t[0], true]));
 const RAMPA = ['#86b6ef', '#6da7ec', '#5598e7', '#3987e5', '#2a78d6', '#256abf', '#1c5cab', '#184f95'];
 function colorDe(e) {
@@ -867,12 +872,12 @@ function pintar() {
     else { const c = capaEstado[e.t], mapa = modo !== 'instalacion' && c && c.tex && c.tex !== 'liso' ? TEX[c.tex] : null; if (mat.map !== mapa) { mat.map = mapa; mat.needsUpdate = true; } mat.color.set(col(e)); }
     const inst = modo === 'instalacion' && !VIGAS_CRUZADAS.has(e.id);
     // Con un elemento elegido, el resto queda gris claro y apenas transparente (ver TRANSP_FOCO).
-    const aclarado = !!seleccion && seleccion !== e.id;
+    const aclarado = hayEleccion() && !estaElegido(e.id);
     const fantasma = modo === 'instalacion' && (aclarado || inst);
     mat.opacity = modo === 'instalacion' ? (VIGAS_CRUZADAS.has(e.id) ? 0.45 : e.t === 'losa' ? 0.28 : 0.08) : (modo === 'avance' && !hecho(e.id) ? 0.15 : 1);
     mat.transparent = mat.opacity < 1; mat.depthWrite = modo !== 'instalacion' && mat.opacity === 1;
     if (aclarado && modo !== 'instalacion') { if (mat.map) { mat.map = null; mat.needsUpdate = true; } mat.color.copy(GRIS_FOCO); mat.emissive.set(0x202020); mat.opacity = Math.min(mat.opacity, TRANSP_FOCO); mat.transparent = true; mat.depthWrite = true; }
-    else mat.emissive.set(e.id === hover ? 0x2a2a2a : (e.id === seleccion ? 0x1c2a40 : 0x000000));
+    else mat.emissive.set(e.id === hover ? 0x2a2a2a : (estaElegido(e.id) ? 0x1c2a40 : 0x000000));
     m.children[0].visible = !fantasma || inst;
   }
   pintarSan();
@@ -994,7 +999,9 @@ lienzo.addEventListener('pointermove', ev => {
 lienzo.addEventListener('pointerleave', () => { tip.hidden = true; if (hover) { hover = null; pintar(); } });
 lienzo.addEventListener('pointerup', ev => {
   if (!abajo || Math.hypot(ev.clientX - abajo[0], ev.clientY - abajo[1]) > 5) return;
-  elegir(tocar(ev));
+  const id = tocar(ev);
+  if (ev.ctrlKey || ev.metaKey) { if (id) elegir(id, false, true); }   // Ctrl + clic en el vacío no borra lo elegido
+  else elegir(id);
 });
 // Lleva la cámara al elemento: mantiene la dirección desde la que se mira y se acerca hasta que la pieza entra
 // con aire en la parte libre de la vista (sin la columna de niveles), sea una columna o una losa entera.
@@ -1008,8 +1015,16 @@ function encuadrarElemento(id) {
   const d = Math.max(3, distPara(ancho * 1.8, alto * 1.8)), tgt = c.clone().add(corrLibre(d, der));
   volarA(tgt.clone().addScaledVector(dir, d), tgt);
 }
-function elegir(id, enfocar = false) {
-  if (typeof enEdicion !== 'undefined' && enEdicion && enEdicion !== id) enEdicion = null;
+function elegir(id, enfocar = false, sumar = false) {
+  if (sumar) {
+    if (!id) return;
+    if (!seleccionados.size && seleccion) seleccionados.add(seleccion);
+    if (seleccionados.has(id)) seleccionados.delete(id); else seleccionados.add(id);
+    // con una sola pieza vuelve a ser una selección común
+    if (seleccionados.size <= 1) { id = [...seleccionados][0] || null; seleccionados.clear(); }
+    else if (!seleccionados.has(id)) id = [...seleccionados].at(-1);
+  } else seleccionados.clear();
+  if (typeof enEdicion !== 'undefined' && enEdicion && (enEdicion !== id || seleccionados.size)) enEdicion = null;
   seleccion = id;
   if (id && enfocar) encuadrarElemento(id);
   pintar(); refrescarResumen(); marcarFilaSel();
@@ -1017,7 +1032,7 @@ function elegir(id, enfocar = false) {
   if (pestana === 'sanitaria') refrescarSanitaria();
   if (pestana === 'albanileria') refrescarAlbanileria();
 }
-addEventListener('keydown', ev => { if (ev.key === 'Escape' && seleccion) elegir(null); });
+addEventListener('keydown', ev => { if (ev.key === 'Escape' && hayEleccion()) elegir(null); });
 
 // ---------- Pestañas ----------
 // La pestaña Avance está guardada por ahora: su panel (#p-avance) se sigue armando oculto, así que para volver
@@ -1093,9 +1108,35 @@ function medidasDe(e) {
   if (descActivos(e).length) m.push(['Hormigón bruto', fmt(e.volBruto, 3) + ' m³', true]);
   return m;
 }
+function fichaVarios() {
+  const ids = [...seleccionados], est = ids.filter(id => porId[id]).map(id => porId[id]);
+  const mur = ids.filter(id => id.startsWith('muro:') && muroPorId[id.slice(5)]).map(id => muroPorId[id.slice(5)]);
+  const otros = ids.length - est.length - mur.length;
+  const vol = est.reduce((a, e) => a + e.vol, 0), ac = est.reduce((a, e) => a + acero(e), 0);
+  const tipos = {}; for (const e of est) { const k = tipos[e.t] ||= { n: 0, vol: 0 }; k.n++; k.vol += e.vol; }
+  const sup = mur.reduce((a, m) => a + netoMuro(m).sup, 0), lad = mur.reduce((a, m) => a + ladrillosDe({ ...m, sup: netoMuro(m).sup }), 0);
+  const med = [];
+  if (est.length) med.push(['Hormigón', fmt(vol, 3) + ' m³'], ['Acero est.', fmt(ac, 0) + ' kg']);
+  if (mur.length) med.push(['Muros', fmt(sup, 2) + ' m²'], ['Ladrillos', fmt(lad, 0)]);
+  med.push(['Piezas', String(ids.length)]);
+  const fila = id => {
+    const e = porId[id], m = id.startsWith('muro:') && muroPorId[id.slice(5)];
+    const [nom, tipo, val, color] = e ? [e.n, NOM_TIPO[e.t] + ' · ' + NIV[nivIdx[e.l]].corto, fmt(e.vol, 3) + ' m³', 'var(--s-' + e.t + ')'] : m ? [m.nombre, TIPO_MURO[m.tipo] + ' · ' + NOM_PISO_MURO[m.piso], fmt(netoMuro(m).sup, 2) + ' m²', 'var(--a-' + m.tipo + ')'] : [nombreDe(id), '', '', 'var(--fg2)'];
+    return `<tr><td><span class="sw" style="display:inline-block;vertical-align:-1px;margin-right:6px;background:${color}"></span>${esc(nom)}</td><td class="sec">${esc(tipo)}</td><td class="r num">${val}</td><td style="width:26px"><button type="button" class="ojo" data-sacar-sel="${esc(id)}" title="Sacar de la selección" aria-label="Sacar ${esc(nom)} de la selección">✕</button></td></tr>`;
+  };
+  return `<div class="ficha">
+    <div class="ficha-cab"><span class="sw" style="width:14px;height:14px;background:var(--accent)"></span><div><h3>${ids.length} elementos</h3><div class="tipo">Selección · Ctrl + clic suma o saca piezas</div></div>
+      <button class="cerrar" type="button" id="cerrarFicha">Limpiar ✕</button></div>
+    <div class="medidas">${med.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>
+    ${Object.keys(tipos).length > 1 ? `<div class="tabla-wrap"><table><thead><tr><th>Tipo</th><th class="r">Piezas</th><th class="r">m³</th></tr></thead><tbody>${Object.entries(tipos).map(([k, v]) => `<tr><td><span class="sw" style="display:inline-block;vertical-align:-1px;margin-right:6px;background:var(--s-${k})"></span>${esc(NOM_TIPO[k])}</td><td class="r num">${v.n}</td><td class="r num">${fmt(v.vol, 3)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+    <div class="tabla-wrap"><table class="obra"><tbody>${ids.map(fila).join('')}</tbody></table></div>
+    <div class="comparar"><span>El hormigón es el de cada pieza sin la parte que comparte con otras (como en los totales de la obra)${otros ? `. ${otros} de las piezas son de la instalación y no suman hormigón` : ''}.</span></div></div>`;
+}
 function refrescarResumen() {
   const p = $('#p-resumen'); let h = '<section><h2>Elemento</h2>';
-  if (seleccion && !porId[seleccion]) {
+  if (seleccionados.size > 1) {
+    h += fichaVarios();
+  } else if (seleccion && !porId[seleccion]) {
     h += fichaSan(seleccion);
   } else if (seleccion) {
     const e = porId[seleccion];
@@ -1115,7 +1156,7 @@ function refrescarResumen() {
       ${medidasEditadas[e.id] ? `<div class="comparar"><span class="dif">Medidas cambiadas en el tablero (original: ${Object.keys(medidasEditadas[e.id]).map(c => (c === 'largo' ? 'largo ' : e.t === 'losa' ? 'espesor ' : 'alto ') + fmt(medidaDe(e, c, e.v0), 2) + ' m').join(', ')}).</span><button type="button" class="btn" data-restablecer-el="${e.id}" style="justify-self:start;margin-top:4px">Volver al original</button></div>` : ''}
       ${notaComun(e)}${comp}${e.dud ? `<div class="comparar"><span class="dif">La pieza no es un sólido cerrado en el SketchUp (le faltan caras). El volumen se midió con rayos verticales cada 2 mm; conviene corregirla en el modelo.</span></div>` : ''}</div>`;
   } else {
-    h += `<div class="vacio">Pasá el mouse sobre el modelo para ver qué es cada pieza y hacé clic para ver su ficha: medidas, cómputo, estado de obra y cómo se compara con el plano del ingeniero. También podés buscarla en <b>Elementos</b>.<br><br><b>Mover:</b> doble clic sobre un muro o un elemento de estructura y después agarralo y arrastralo; se engancha con lo que tiene cerca (Shift: en una dirección, Alt: sin enganche). <b>Navegar</b> como en SketchUp: ruedita apretada orbita, Shift + ruedita desplaza, girar la ruedita acerca hacia el cursor. Ctrl+Z deshace.</div>`;
+    h += `<div class="vacio">Pasá el mouse sobre el modelo para ver qué es cada pieza y hacé clic para ver su ficha: medidas, cómputo, estado de obra y cómo se compara con el plano del ingeniero. También podés buscarla en <b>Elementos</b>. Con <b>Ctrl + clic</b> elegís varias piezas y ves sus totales (por ejemplo, el hormigón de tres columnas).<br><br><b>Mover:</b> doble clic sobre un muro o un elemento de estructura y después agarralo y arrastralo; se engancha con lo que tiene cerca (Shift: en una dirección, Alt: sin enganche). <b>Navegar</b> como en SketchUp: ruedita apretada orbita, Shift + ruedita desplaza, girar la ruedita acerca hacia el cursor. Ctrl+Z deshace.</div>`;
   }
   h += '</section>';
   if (SAN.tramos.length) h += `<section class="aviso"><span><b>Instalación sanitaria</b> · ${SAN.pases.filter(q => !q.ok).length} pases faltantes y ${SAN.cruces.length} cruces con vigas para revisar.</span><button class="btn prim" type="button" id="irSan">Ver instalación</button></section>`;
@@ -1139,6 +1180,7 @@ function refrescarResumen() {
   if (notas.length) h += `<section><h2>Para revisar</h2><ul class="revisar">${notas.map(n => `<li>${esc(n)}</li>`).join('')}</ul></section>`;
   p.innerHTML = h;
   p.querySelector('#cerrarFicha')?.addEventListener('click', () => elegir(null));
+  p.querySelectorAll('[data-sacar-sel]').forEach(b => b.onclick = () => elegir(b.dataset.sacarSel, false, true));
   p.querySelector('#irSan')?.addEventListener('click', () => abrir('sanitaria'));
   p.querySelectorAll('.fila-graf').forEach(f => { f.onclick = () => elegirNivel(f.dataset.niv); f.onkeydown = ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); elegirNivel(f.dataset.niv); } }; });
   p.querySelectorAll('.barra i').forEach(i => {
@@ -1859,7 +1901,7 @@ function resaltado(mat) {
 const _pend = new Map();
 function pendiente(mat) { let f = _pend.get(mat); if (!f) { f = mat.clone(); _pend.set(mat, f); } f.map = mat.map; if (f.color && mat.color) f.color.copy(mat.color); f.transparent = true; f.opacity = 0.15; f.depthWrite = false; return f; }
 function aplicarFoco() {
-  const hay = !!seleccion;
+  const hay = hayEleccion();
   for (const mesh of [...MUROS, ...sanMallas]) {
     if (!mesh.isMesh) continue;
     const base = mesh.userData.base || (mesh.userData.base = mesh.material);
@@ -1867,9 +1909,9 @@ function aplicarFoco() {
     let b = mesh.userData.base;
     const idObra = mesh.userData.id;
     if (modo === 'avance' && (idObra.startsWith('muro:') || idObra.startsWith('san:') || idObra.startsWith('art:')) && !hecho(idObra)) b = pendiente(b);
-    mesh.material = !hay ? b : mesh.userData.id === seleccion ? resaltado(b) : tenue(b);
+    mesh.material = !hay ? b : estaElegido(mesh.userData.id) ? resaltado(b) : tenue(b);
     const borde = mesh.children.find(c => c.isLineSegments);
-    if (borde) { borde.userData.base ||= borde.material; borde.material = hay && mesh.userData.id === seleccion ? matBordeSel : borde.userData.base; borde.visible = !hay || mesh.userData.id === seleccion || modo !== 'instalacion'; }
+    if (borde) { borde.userData.base ||= borde.material; borde.material = hay && estaElegido(mesh.userData.id) ? matBordeSel : borde.userData.base; borde.visible = !hay || mesh.userData.id === seleccion || modo !== 'instalacion'; }
   }
 }
 
@@ -2267,7 +2309,7 @@ addEventListener('keydown', ev => {
   const ctrl = ev.ctrlKey || ev.metaKey, k = ev.key.toLowerCase();
   if (ctrl && k === 'z' && !ev.shiftKey) { ev.preventDefault(); deshacer(); }
   else if (ctrl && (k === 'y' || (k === 'z' && ev.shiftKey))) { ev.preventDefault(); rehacer(); }
-  else if ((ev.key === 'Delete' || ev.key === 'Supr') && seleccion) { ev.preventDefault(); eliminar(seleccion); }
+  else if ((ev.key === 'Delete' || ev.key === 'Supr') && seleccion) { ev.preventDefault(); if (seleccionados.size > 1) avisoBreve('Con varios elementos elegidos no se elimina: elegí uno solo'); else eliminar(seleccion); }
 });
 { const a = document.createElement('div'); a.id = 'avisoAccion'; a.className = 'flota'; a.hidden = true; Object.assign(a.style, { position: 'absolute', left: '50%', bottom: '58px', transform: 'translateX(-50%)', padding: '6px 12px', fontSize: '12.5px', zIndex: 7 }); lienzo.parentElement.append(a); }
 
@@ -2949,9 +2991,9 @@ function refrescarElementos() {
     for (const n of NIV.slice().reverse()) {
       const N = L.filter(i => i.nivel === n.id); if (!N.length) continue;
       const todosH = N.every(i => hecho(i.id)), algunos = N.some(i => hecho(i.id)), sub = N.reduce((a, i) => a + i.cant, 0);
-      const clave = r + '|' + n.id, nivAbierto = q || nivAbiertos.has(clave) || N.some(i => i.id === seleccion);
+      const clave = r + '|' + n.id, nivAbierto = q || nivAbiertos.has(clave) || N.some(i => estaElegido(i.id));
       h += `<details class="nivel-el" data-niv="${clave}"${nivAbierto ? ' open' : ''}><summary class="nivel-cab"><span class="izq"><svg class="flecha" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5l4.5 4.5L6 12.5"/></svg><label><input type="checkbox" data-todo="${clave}"${todosH ? ' checked' : ''}${!todosH && algunos ? ' data-mixto' : ''} aria-label="Marcar todo ${esc(n.corto)} como hecho"> ${esc(n.corto)}</label></span><span class="der"><span class="num">${N.length} · ${fmt(sub, un === 'm³' ? 2 : 1)} ${un}</span><button type="button" class="ojo" data-ojo-grupo="${clave}" aria-pressed="${!N.every(i => ocultos.has(i.id))}" title="${N.every(i => ocultos.has(i.id)) ? 'Mostrar' : 'Ocultar'} todo ${esc(n.corto)}" aria-label="${N.every(i => ocultos.has(i.id)) ? 'Mostrar' : 'Ocultar'} todo ${esc(n.corto)}">${OJO(!N.every(i => ocultos.has(i.id)))}</button></span></summary>
-        <table class="obra"><tbody>${N.map(i => `<tr class="clic${i.id === seleccion ? ' sel' : ''}${ocultos.has(i.id) ? ' apagado' : ''}" data-id="${i.id}"><td style="width:22px"><input type="checkbox" data-hecho="${i.id}"${hecho(i.id) ? ' checked' : ''} aria-label="${esc(i.nombre)} hecho"></td>
+        <table class="obra"><tbody>${N.map(i => `<tr class="clic${estaElegido(i.id) ? ' sel' : ''}${ocultos.has(i.id) ? ' apagado' : ''}" data-id="${i.id}"><td style="width:22px"><input type="checkbox" data-hecho="${i.id}"${hecho(i.id) ? ' checked' : ''} aria-label="${esc(i.nombre)} hecho"></td>
           <td><span class="sw" style="display:inline-block;vertical-align:-1px;margin-right:6px;background:${i.color}"></span>${esc(i.nombre)}</td><td class="sec">${esc(i.tipo)}${i.det ? ' · ' + esc(i.det) : ''}</td><td class="r num">${i.cant ? fmt(i.cant, un === 'm³' ? 3 : 2) : ''}</td><td style="width:28px"><button type="button" class="ojo" data-ojo="${i.id}" aria-pressed="${!ocultos.has(i.id)}" title="${ocultos.has(i.id) ? 'Mostrar' : 'Ocultar'} en el modelo" aria-label="${ocultos.has(i.id) ? 'Mostrar' : 'Ocultar'} ${esc(i.nombre)}">${OJO(!ocultos.has(i.id))}</button></td></tr>`).join('')}</tbody></table></details>`;
     }
     if (!L.length) h += `<p class="nota" style="padding:4px 8px">Nada para mostrar con este filtro.</p>`;
@@ -2964,13 +3006,13 @@ function refrescarElementos() {
   cont.querySelectorAll('details.nivel-el').forEach(d => d.ontoggle = () => { if (d.open) nivAbiertos.add(d.dataset.niv); else nivAbiertos.delete(d.dataset.niv); });
   cont.querySelectorAll('details.rubro').forEach(d => d.ontoggle = () => { if (d.open) abiertos.add(d.dataset.rubro); else abiertos.delete(d.dataset.rubro); });
   cont.querySelectorAll('[data-todo]').forEach(c => c.onchange = () => { const [r, n] = c.dataset.todo.split('|'); marcarHecho(l.filter(i => i.rubro === r && i.nivel === n).map(i => i.id), c.checked); });
-  cont.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = ev => { if (ev.target.closest('input, button')) return; const id = tr.dataset.id; if (ocultos.has(id)) ponerOcultos([id], false); const e = porId[id]; if (nivelSel && ((SANP[id] && !SANP[id].m.visible) || (e && !visibleNivel(e.l)))) elegirNivel(null); elegir(id, true); });
+  cont.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = ev => { if (ev.target.closest('input, button')) return; const id = tr.dataset.id; if (ocultos.has(id)) ponerOcultos([id], false); const e = porId[id]; if (nivelSel && ((SANP[id] && !SANP[id].m.visible) || (e && !visibleNivel(e.l)))) elegirNivel(null); const sumar = ev.ctrlKey || ev.metaKey; elegir(id, !sumar, sumar); });
   cont.querySelectorAll('[data-ojo-grupo]').forEach(b => b.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); const [r, n] = b.dataset.ojoGrupo.split('|'), ids = todos.filter(i => i.rubro === r && i.nivel === n).map(i => i.id); ponerOcultos(ids, !ids.every(id => ocultos.has(id))); });
   const av = $('#avisoOcultos'); av.hidden = !ocultos.size;
   if (ocultos.size) { av.innerHTML = `<span>${ocultos.size} ${ocultos.size === 1 ? 'elemento apagado' : 'elementos apagados'}: no se ven ni suman en los cómputos</span><button type="button" class="btn" id="mostrarOcultos">Mostrar todos</button>`; $('#mostrarOcultos').onclick = () => ponerOcultos([...ocultos], false); }
   $('#t-elementos .cuenta').textContent = todos.length;
 }
-function marcarFilaSel() { document.querySelectorAll('#listaObra tr[data-id]').forEach(tr => { const si = tr.dataset.id === seleccion; tr.classList.toggle('sel', si); if (si) { const d = tr.closest('details.nivel-el'); if (d && !d.open) d.open = true; } }); }
+function marcarFilaSel() { document.querySelectorAll('#listaObra tr[data-id]').forEach(tr => { const si = estaElegido(tr.dataset.id); tr.classList.toggle('sel', si); if (si) { const d = tr.closest('details.nivel-el'); if (d && !d.open) d.open = true; } }); }
 
 // Pestaña Avance
 function refrescarAvance() {
